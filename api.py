@@ -36,7 +36,7 @@ def _pixabay_search(key, query):
             "category": "food",
             "orientation": "horizontal",
             "safesearch": "true",
-            "per_page": 5,
+            "per_page": 20,
         }
     )
     req = urllib.request.Request(
@@ -45,8 +45,16 @@ def _pixabay_search(key, query):
     with urllib.request.urlopen(req, timeout=6) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     hits = data.get("hits") or []
-    if hits:
-        return hits[0].get("largeImageURL") or hits[0].get("webformatURL")
+    # Only accept a photo whose tags mention the dish word (the last word of
+    # the search, like "biryani"). No photo is better than a wrong photo.
+    words = [w for w in query.lower().replace("-", " ").split() if w.isalpha()]
+    head = words[-1] if words else ""
+    if len(head) > 3 and head.endswith("s"):
+        head = head[:-1]
+    for hit in hits:
+        tags = (hit.get("tags") or "").lower()
+        if head and head in tags:
+            return hit.get("largeImageURL") or hit.get("webformatURL")
     return None
 
 
