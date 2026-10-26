@@ -82,215 +82,192 @@ PAGE = r"""
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#e8590c">
+<meta name="theme-color" content="#f9f8f4">
 <title>ChefGPT</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍳</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@600;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%231e4637%22/><text x=%2232%22 y=%2246%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23f9f8f4%22 font-family=%22Georgia,serif%22>C</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fbf6ee; --card: #ffffff; --ink: #241a12; --muted: #85735f; --line: #eee1d0;
-    --accent: #e8590c; --accent-dark: #c2410c; --soft: #ffeadb; --ok: #2f9e44;
-    --radius: 20px; --shadow: 0 10px 40px rgba(70, 35, 5, .10);
+    --bone: #f9f8f4; --ink: #17201b; --muted: #667068; --line: #dcdfd6;
+    --green: #1e4637; --green-dark: #163528; --saffron: #c98a10;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font-family: "DM Sans", system-ui, Arial, sans-serif; line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
+    margin: 0; background: var(--bone); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased;
   }
-  button { font: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--saffron); outline-offset: 2px; }
 
-  /* ---------- header ---------- */
-  .hero {
-    background:
-      radial-gradient(900px 360px at 85% -30%, rgba(255, 255, 255, .30), transparent 60%),
-      linear-gradient(135deg, #ff9a3c 0%, #e8590c 100%);
-    color: #fff; text-align: center; padding: 46px 20px 100px;
-  }
-  .hero h1 {
-    font-family: "Fraunces", Georgia, serif; font-weight: 800; letter-spacing: -1px;
-    font-size: clamp(2.3rem, 6vw, 3.3rem); margin: 0 0 6px;
-  }
-  .hero p { margin: 0; opacity: .95; font-size: 1.08rem; }
+  .page { max-width: 880px; margin: 0 auto; padding: 0 24px 72px; }
 
-  .wrap { max-width: 860px; margin: -64px auto 56px; padding: 0 16px; }
+  /* ---------- masthead ---------- */
+  .top {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+    padding: 26px 0 16px; border-bottom: 1px solid var(--ink);
+  }
+  .logo { font-family: var(--serif); font-size: 1.9rem; font-weight: 500; letter-spacing: -.01em; }
+  .top p { margin: 0; color: var(--muted); font-size: .92rem; text-align: right; }
+  @media (max-width: 640px) { .top p { display: none; } }
 
-  /* ---------- search panel ---------- */
-  .panel { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
-  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
-  @media (max-width: 640px) { .fields { grid-template-columns: 1fr; } }
-  label {
-    display: block; font-weight: 700; font-size: .78rem; margin: 0 0 6px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .6px;
+  /* ---------- the order, written as a sentence ---------- */
+  .order { padding: 48px 0 30px; border-bottom: 1px solid var(--line); }
+  .sentence {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin: 0 0 20px;
+    font-family: var(--serif); font-size: clamp(1.9rem, 5.5vw, 3rem); line-height: 1.15; letter-spacing: -.015em;
   }
-  .field {
-    width: 100%; padding: 14px 16px; font: inherit; font-size: 1.02rem; color: var(--ink);
-    border: 2px solid var(--line); border-radius: 12px; background: #fffdfa; outline: none;
-    transition: border-color .15s, box-shadow .15s;
+  .sentence.small { font-size: clamp(1.15rem, 3.2vw, 1.5rem); color: var(--muted); letter-spacing: 0; margin-bottom: 0; }
+  .lead { font: inherit; color: inherit; }
+  .blank {
+    flex: 1; min-width: 12ch; font: inherit; letter-spacing: inherit; color: var(--green);
+    background: transparent; border: 0; border-bottom: 2px solid var(--ink); border-radius: 0;
+    padding: 0 2px 3px; outline: none; transition: border-color .15s;
   }
-  .field:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(232, 89, 12, .12); }
-  .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
-  .chips[hidden] { display: none; }
-  .chip-label { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-right: 2px; }
-  .chip {
-    border: none; background: var(--soft); color: var(--accent-dark); padding: 7px 14px;
-    border-radius: 999px; font-size: .9rem; cursor: pointer; transition: transform .1s, background .15s;
-  }
-  .chip:hover { background: #ffd8b0; transform: translateY(-1px); }
-  .recent-chip { background: #f3ece2; color: var(--ink); }
-  .recent-chip:hover { background: #eadfce; }
+  .blank::placeholder { color: #b3b9ae; }
+  .blank:focus, .blank:focus-visible { border-bottom-color: var(--saffron); outline: none; }
+  .sentence.small .blank { color: var(--ink); border-bottom-width: 1px; }
+
+  .row { margin-top: 28px; }
   .go {
-    width: 100%; margin-top: 6px; border: none; background: var(--accent); color: #fff; font-weight: 700;
-    font-size: 1.1rem; padding: 15px; border-radius: 12px; cursor: pointer;
-    transition: background .15s, transform .1s;
+    background: var(--green); color: #fff; border: 0; padding: 14px 30px; border-radius: 6px;
+    font-weight: 600; font-size: 1rem; cursor: pointer; transition: background .15s;
   }
-  .go:hover { background: var(--accent-dark); }
-  .go:active { transform: scale(.99); }
-  .go:disabled { opacity: .65; cursor: wait; }
+  .go:hover { background: var(--green-dark); }
+  .go:disabled { opacity: .6; cursor: wait; }
+  @media (max-width: 640px) { .go { width: 100%; } }
+
+  .chips { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; margin-top: 20px; font-size: .92rem; }
+  .chips[hidden] { display: none; }
+  .chip-label { color: var(--muted); }
+  .chip { background: none; border: 0; border-bottom: 1px solid var(--line); padding: 0; color: var(--green); cursor: pointer; }
+  .chip:hover { border-bottom-color: var(--green); }
+  .recent-chip { color: var(--ink); }
 
   /* ---------- loading and errors ---------- */
-  #out { margin-top: 28px; }
-  .loading { text-align: center; padding: 44px 10px; color: var(--muted); }
-  .loading small { display: block; margin-top: 4px; opacity: .8; }
-  .spinner {
-    width: 44px; height: 44px; border: 5px solid var(--soft); border-top-color: var(--accent);
-    border-radius: 50%; margin: 0 auto 14px; animation: spin .9s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error { background: #fff0f0; color: #b42318; padding: 18px; border-radius: 14px; border: 1px solid #ffd0d0; }
-  .error .detail { margin: 6px 0 0; font-size: .85rem; opacity: .75; word-break: break-word; }
-  .ghost {
-    margin-top: 12px; background: #fff; color: var(--accent-dark); border: 2px solid var(--accent);
-    padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer;
-  }
-  .ghost:hover { background: var(--soft); }
+  #out { margin-top: 40px; }
+  .loading { padding: 8px 0 40px; color: var(--muted); }
+  .bar { position: relative; height: 2px; background: var(--line); overflow: hidden; margin-bottom: 20px; }
+  .bar::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: var(--green); animation: slide 1.4s ease-in-out infinite; }
+  @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
+  #loadmsg { font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--ink); }
+  .loading small { display: block; margin-top: 4px; font-size: .88rem; }
+  .error { border-left: 3px solid var(--saffron); padding: 6px 0 6px 18px; }
+  .error strong { display: block; font-weight: 600; }
+  .error .detail { margin: 6px 0 0; color: var(--muted); font-size: .88rem; word-break: break-word; }
+  .ghost { margin-top: 14px; background: none; border: 1px solid var(--ink); padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; }
+  .ghost:hover { background: var(--ink); color: #fff; }
 
-  /* ---------- recipe card ---------- */
-  .recipe { background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); animation: rise .5s ease; }
-  @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-  .head {
-    position: relative; height: 300px; overflow: hidden; display: flex; align-items: flex-end;
-    background: linear-gradient(135deg, #ffd8a8, #ffa94d);
-  }
-  .emoji { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 7rem; opacity: .55; }
-  .photo-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .6s; }
-  .photo-img.show { opacity: 1; }
-  .shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(20, 10, 0, .75) 0%, rgba(20, 10, 0, .15) 55%, transparent 100%); }
+  /* ---------- recipe ---------- */
   .title {
-    position: relative; color: #fff; margin: 0; padding: 24px 26px; line-height: 1.15;
-    font-family: "Fraunces", Georgia, serif; font-size: clamp(1.6rem, 4.5vw, 2.3rem);
-    text-shadow: 0 2px 12px rgba(0, 0, 0, .35);
+    font-family: var(--serif); font-weight: 500; font-size: clamp(2.2rem, 6vw, 3.6rem);
+    line-height: 1.04; letter-spacing: -.02em; margin: 0 0 12px;
   }
-  .credit {
-    position: absolute; right: 12px; top: 10px; font-size: .72rem; color: #fff;
-    background: rgba(0, 0, 0, .35); padding: 2px 9px; border-radius: 999px;
+  .desc { font-family: var(--serif); font-size: 1.25rem; line-height: 1.5; color: var(--muted); max-width: 60ch; margin: 0; }
+  .photo-wrap {
+    display: none; position: relative; margin-top: 28px; height: clamp(220px, 45vw, 420px);
+    background: #e7e9e1; overflow: hidden; border-radius: 4px;
   }
+  .photo-wrap.show { display: block; animation: fade .7s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .credit { position: absolute; right: 10px; bottom: 10px; font-size: .72rem; color: #fff; background: rgba(0, 0, 0, .4); padding: 2px 8px; border-radius: 4px; }
   .credit:empty { display: none; }
 
-  .body { padding: 24px 26px 28px; }
-  .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-  .pill { background: var(--soft); color: var(--accent-dark); padding: 6px 14px; border-radius: 999px; font-weight: 500; font-size: .92rem; }
-  .desc { margin: 0 0 14px; color: var(--muted); }
-  .safe { background: #eef7f0; color: #276738; padding: 10px 14px; border-radius: 12px; font-size: .9rem; margin-bottom: 6px; }
-  .safe small { display: block; opacity: .8; margin-top: 2px; }
-  .cols { display: grid; grid-template-columns: 1fr 1.4fr; gap: 30px; margin-top: 22px; }
-  @media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
-  h3 { font-family: "Fraunces", Georgia, serif; font-size: 1.3rem; margin: 0 0 12px; }
+  .stats { display: flex; flex-wrap: wrap; margin: 28px 0 8px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stat { padding: 14px 32px 14px 0; margin-right: 32px; border-right: 1px solid var(--line); }
+  .stat:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+  .stat-label { font-size: .82rem; color: var(--muted); }
+  .stat-val { font-family: var(--serif); font-size: 1.7rem; line-height: 1.2; }
 
-  ul.ing { list-style: none; padding: 0; margin: 0; }
-  ul.ing li { border-bottom: 1px dashed var(--line); }
-  ul.ing label {
-    display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; margin: 0; cursor: pointer;
-    font-size: 1rem; font-weight: 400; color: var(--ink); text-transform: none; letter-spacing: 0;
+  .safe { margin: 16px 0 0; padding-left: 14px; border-left: 2px solid var(--green); font-size: .94rem; }
+  .safe small { display: block; color: var(--muted); margin-top: 2px; }
+
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 56px; margin-top: 36px; }
+  @media (max-width: 760px) { .cols { grid-template-columns: 1fr; gap: 36px; } }
+  h3 { font-family: var(--serif); font-weight: 500; font-size: 1.7rem; letter-spacing: -.01em; margin: 0 0 4px; }
+  .hint { margin: 0 0 10px; font-size: .84rem; color: var(--muted); }
+
+  ul.ing { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--ink); }
+  ul.ing li { border-bottom: 1px solid var(--line); }
+  ul.ing label { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; cursor: pointer; }
+  ul.ing input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--green); flex: none; }
+  ul.ing li.done span { color: var(--muted); text-decoration: line-through; }
+
+  ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; border-top: 1px solid var(--ink); }
+  ol.steps li {
+    counter-increment: s; position: relative; padding: 16px 0 16px 52px; border-bottom: 1px solid var(--line);
+    cursor: pointer; font-family: var(--serif); font-size: 1.15rem; line-height: 1.6; transition: opacity .2s;
   }
-  ul.ing input { margin-top: 5px; accent-color: var(--accent); width: 17px; height: 17px; flex: none; }
-  ul.ing li.done span { text-decoration: line-through; color: var(--muted); }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 10px; font-family: var(--serif); font-size: 2rem; line-height: 1.2; color: var(--green); }
+  ol.steps li.done { opacity: .4; }
 
-  ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; }
-  ol.steps li { counter-increment: s; position: relative; padding: 0 0 18px 48px; cursor: pointer; transition: opacity .2s; }
-  ol.steps li::before {
-    content: counter(s); position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%;
-    background: var(--accent); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center;
-  }
-  ol.steps li.done { opacity: .45; }
-  ol.steps li.done::before { background: var(--ok); content: "✓"; }
-  .hint { font-size: .8rem; color: var(--muted); margin: -4px 0 12px; }
+  .extra { margin-top: 36px; padding: 18px 20px; background: #f0f1ea; border-radius: 6px; }
+  .extra ul { margin: 8px 0 0; padding-left: 18px; }
 
-  .extra { margin-top: 22px; background: #fffaf3; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
-  .extra ul { margin: 0; padding-left: 20px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .act { background: none; border: 1px solid #c5cabd; padding: 9px 16px; border-radius: 6px; font-weight: 500; font-size: .9rem; cursor: pointer; }
+  .act:hover { border-color: var(--ink); }
 
-  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line); }
-  .act {
-    background: #fff; color: var(--ink); border: 2px solid var(--line); padding: 10px 16px; border-radius: 12px;
-    font-weight: 500; cursor: pointer; transition: border-color .15s, background .15s;
-  }
-  .act:hover { border-color: var(--accent); background: #fffaf3; }
-
-  footer { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 30px; }
+  footer { margin-top: 48px; color: var(--muted); font-size: .82rem; }
 
   @media print {
-    .hero, .panel, .actions, footer, .hint, .credit { display: none !important; }
+    .top, .order, .actions, footer, .hint, .credit { display: none !important; }
     body { background: #fff; }
-    .wrap { margin: 0; }
-    .recipe { box-shadow: none; }
+    #out { margin-top: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
   }
 </style>
 </head>
 <body>
-  <div class="hero">
-    <h1>👨‍🍳 ChefGPT</h1>
-    <p>Tell me what you're craving. I'll write the recipe.</p>
-  </div>
+  <div class="page">
+    <header class="top">
+      <div class="logo">ChefGPT</div>
+      <p>Tell me what you're craving. I'll write the recipe.</p>
+    </header>
 
-  <div class="wrap">
-    <div class="panel">
-      <div class="fields">
-        <div>
-          <label for="food">What do you want to cook?</label>
-          <input class="field" id="food" placeholder="e.g. chicken biryani" autocomplete="off">
-        </div>
-        <div>
-          <label for="cons">Dietary constraints (optional)</label>
-          <input class="field" id="cons" placeholder="e.g. no nuts, vegetarian" autocomplete="off">
-        </div>
+    <section class="order">
+      <div class="sentence">
+        <label class="lead" for="food">I'd like to cook</label>
+        <input class="blank" id="food" placeholder="chicken biryani" autocomplete="off">
       </div>
+      <div class="sentence small">
+        <label class="lead" for="cons">Dietary needs</label>
+        <input class="blank" id="cons" placeholder="optional, e.g. no nuts, vegetarian" autocomplete="off">
+      </div>
+      <div class="row"><button type="button" class="go" id="go">Get recipe</button></div>
       <div class="chips">
-        <button type="button" class="chip" data-f="Chicken pasta">🍝 Chicken pasta</button>
-        <button type="button" class="chip" data-f="Veggie curry">🍛 Veggie curry</button>
-        <button type="button" class="chip" data-f="Fluffy pancakes">🥞 Pancakes</button>
-        <button type="button" class="chip" data-f="Beef tacos">🌮 Tacos</button>
-        <button type="button" class="chip" data-f="Margherita pizza">🍕 Pizza</button>
-        <button type="button" class="chip" data-f="Chocolate cake">🍰 Cake</button>
+        <span class="chip-label">Try</span>
+        <button type="button" class="chip" data-f="Chicken pasta">Chicken pasta</button>
+        <button type="button" class="chip" data-f="Veggie curry">Veggie curry</button>
+        <button type="button" class="chip" data-f="Fluffy pancakes">Pancakes</button>
+        <button type="button" class="chip" data-f="Beef tacos">Tacos</button>
+        <button type="button" class="chip" data-f="Margherita pizza">Pizza</button>
+        <button type="button" class="chip" data-f="Chocolate cake">Chocolate cake</button>
       </div>
       <div class="chips" id="recent" hidden></div>
-      <button type="button" class="go" id="go">Get recipe</button>
-    </div>
-    <div id="out" aria-live="polite"></div>
-    <footer>Made with ChefGPT · Powered by Gemini</footer>
+    </section>
+
+    <main id="out" aria-live="polite"></main>
+    <footer>ChefGPT · Powered by Gemini · Photos from Pixabay</footer>
   </div>
 
 <script>
   const $ = (id) => document.getElementById(id);
   const out = $("out");
 
-  const EMOJI = [
-    ["pasta","🍝"],["spaghetti","🍝"],["noodle","🍜"],["ramen","🍜"],["pizza","🍕"],["taco","🌮"],["burger","🍔"],
-    ["biryani","🍛"],["curry","🍛"],["rice","🍚"],["salad","🥗"],["soup","🍲"],["cake","🍰"],["chocolate","🍫"],
-    ["pancake","🥞"],["egg","🍳"],["chicken","🍗"],["beef","🥩"],["steak","🥩"],["fish","🐟"],["salmon","🐟"],
-    ["prawn","🍤"],["shrimp","🍤"],["sushi","🍣"],["bread","🍞"],["sandwich","🥪"],["cookie","🍪"],
-    ["ice cream","🍨"],["potato","🥔"]
-  ];
   const LOADING_MSGS = ["Chopping the onions…", "Heating up the pan…", "Tasting for salt…", "Plating it up…"];
   const RECENT_KEY = "chefgpt_recent";
   const EXTRA_RE = /tip|note|substitut/i;
   let loadTimer = null;
 
-  function emojiFor(text) {
-    text = text.toLowerCase();
-    for (let i = 0; i < EMOJI.length; i++) if (text.indexOf(EMOJI[i][0]) !== -1) return EMOJI[i][1];
-    return "🍽️";
-  }
   function el(tag, cls, text) {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -298,6 +275,7 @@ PAGE = r"""
     return e;
   }
   function prettyKey(k) { return k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()); }
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // The recipe object is whichever nested object has an "ingredients" list.
   function findRecipe(o) {
@@ -328,13 +306,15 @@ PAGE = r"""
     }
     return String(x);
   }
-  function metaPill(k, v) {
+  function metaStat(k, v) {
     const key = k.toLowerCase();
     const num = typeof v === "number";
-    if (/calorie|kcal/.test(key)) return "🔥 " + v + " kcal" + (/per/.test(key) ? " / serving" : "");
-    if (/serv/.test(key)) return "👥 " + v + (num ? " servings" : "");
-    if (/time|minute/.test(key)) return "⏱ " + v + (num ? " min" : "");
-    return prettyKey(k) + ": " + v;
+    if (/calorie|kcal/.test(key)) return [/per/.test(key) ? "Calories per serving" : "Calories", v + " kcal"];
+    if (/serv/.test(key)) return ["Serves", String(v)];
+    if (/prep/.test(key)) return ["Prep time", v + (num ? " min" : "")];
+    if (/cook/.test(key)) return ["Cook time", v + (num ? " min" : "")];
+    if (/time|minute/.test(key)) return ["Time", v + (num ? " min" : "")];
+    return [prettyKey(k), String(v)];
   }
 
   // ---------- photo ----------
@@ -355,14 +335,14 @@ PAGE = r"""
       return true;
     }).slice(0, 4);
   }
-  function loadPhoto(title, food, img, credit) {
+  function loadPhoto(title, food, img, wrap, credit) {
     const params = new URLSearchParams();
     photoQueries(title, food).forEach((q) => params.append("q", q));
     fetch("/photo?" + params.toString())
       .then((r) => r.json())
       .then((d) => {
         if (!d || !d.url) return;
-        img.onload = () => { img.classList.add("show"); credit.textContent = "Photo: Pixabay"; };
+        img.onload = () => { wrap.classList.add("show"); credit.textContent = "Photo: Pixabay"; };
         img.onerror = () => img.remove();
         img.src = d.url;
       })
@@ -389,7 +369,7 @@ PAGE = r"""
     box.hidden = false;
     box.appendChild(el("span", "chip-label", "Recent"));
     list.forEach((f) => {
-      const b = el("button", "chip recent-chip", "↺ " + f);
+      const b = el("button", "chip recent-chip", f);
       b.type = "button";
       b.addEventListener("click", () => { $("food").value = f; $("food").focus(); });
       box.appendChild(b);
@@ -399,8 +379,9 @@ PAGE = r"""
   // ---------- loading and errors ----------
   function showLoading() {
     let i = 0;
-    out.innerHTML = '<div class="loading"><div class="spinner"></div><div id="loadmsg"></div><small>This can take up to a minute</small></div>';
+    out.innerHTML = '<div class="loading"><div class="bar"></div><div id="loadmsg"></div><small id="loadnote"></small></div>';
     $("loadmsg").textContent = LOADING_MSGS[0];
+    setLoadingNote("This can take up to a minute.");
     clearInterval(loadTimer);
     loadTimer = setInterval(() => {
       i = (i + 1) % LOADING_MSGS.length;
@@ -408,10 +389,14 @@ PAGE = r"""
       if (n) n.textContent = LOADING_MSGS[i];
     }, 2500);
   }
+  function setLoadingNote(text) {
+    const n = $("loadnote");
+    if (n) n.textContent = text;
+  }
   function showError(msg, detail) {
     out.innerHTML = "";
     const box = el("div", "error");
-    box.appendChild(el("strong", "", "😕 " + msg));
+    box.appendChild(el("strong", "", msg));
     if (detail) box.appendChild(el("p", "detail", String(detail).slice(0, 200)));
     const retry = el("button", "ghost", "Try again");
     retry.type = "button";
@@ -420,7 +405,7 @@ PAGE = r"""
     out.appendChild(box);
   }
 
-  // ---------- recipe card ----------
+  // ---------- recipe ----------
   function render(data, food) {
     out.innerHTML = "";
     const r = findRecipe(data);
@@ -434,41 +419,43 @@ PAGE = r"""
     const stepKey = keys.find((k) => /(step|instruction|direction|method)/i.test(k) && Array.isArray(r[k]));
     const title = titleKey ? String(r[titleKey]) : food.charAt(0).toUpperCase() + food.slice(1);
 
-    const card = el("article", "recipe");
-
-    // header: emoji placeholder, then the photo fades in over it
-    const head = el("div", "head");
-    head.appendChild(el("div", "emoji", emojiFor(food + " " + title)));
-    const img = document.createElement("img");
-    img.className = "photo-img";
-    img.alt = title;
-    head.appendChild(img);
-    head.appendChild(el("div", "shade"));
-    head.appendChild(el("h2", "title", title));
-    const credit = el("span", "credit", "");
-    head.appendChild(credit);
-    card.appendChild(head);
-    loadPhoto(title, food, img, credit);
-
-    const body = el("div", "body");
-
-    // quick facts
-    const meta = el("div", "meta");
+    // quick facts and an optional description
+    const stats = el("div", "stats");
     const metaTexts = [];
     let desc = "";
     keys.forEach((k) => {
       const v = r[k];
       if (k === titleKey || EXTRA_RE.test(k)) return;
       if (typeof v === "number" || (typeof v === "string" && v.length <= 40)) {
-        const t = metaPill(k, v);
-        metaTexts.push(t);
-        meta.appendChild(el("span", "pill", t));
+        const s = metaStat(k, v);
+        metaTexts.push(s[0] + ": " + s[1]);
+        const box = el("div", "stat");
+        box.appendChild(el("div", "stat-label", s[0]));
+        box.appendChild(el("div", "stat-val", s[1]));
+        stats.appendChild(box);
       } else if (typeof v === "string" && !desc) {
         desc = v;
       }
     });
-    if (meta.children.length) body.appendChild(meta);
-    if (desc) body.appendChild(el("p", "desc", desc));
+
+    const card = el("article", "recipe");
+
+    const head = el("div", "recipe-head");
+    head.appendChild(el("h2", "title", title));
+    if (desc) head.appendChild(el("p", "desc", desc));
+    card.appendChild(head);
+
+    // photo stays hidden until it has loaded
+    const wrap = el("div", "photo-wrap");
+    const img = document.createElement("img");
+    img.alt = title;
+    wrap.appendChild(img);
+    const credit = el("span", "credit", "");
+    wrap.appendChild(credit);
+    card.appendChild(wrap);
+    loadPhoto(title, food, img, wrap, credit);
+
+    if (stats.children.length) card.appendChild(stats);
 
     // constraints
     const c = findConstraints(data);
@@ -477,9 +464,11 @@ PAGE = r"""
       if (c.allergens && c.allergens.length) bits.push("avoiding " + c.allergens.join(", ").replace(/_/g, " "));
       if (c.diets && c.diets.length) bits.push(c.diets.join(", ").replace(/_/g, " "));
       if (bits.length) {
-        const safe = el("div", "safe", "Your constraints: " + bits.join(" · "));
+        const safe = el("div", "safe");
+        safe.appendChild(el("strong", "", "Your dietary needs: "));
+        safe.appendChild(document.createTextNode(bits.join(" · ")));
         safe.appendChild(el("small", "", "Always double-check ingredient labels if you have an allergy."));
-        body.appendChild(safe);
+        card.appendChild(safe);
       }
     }
 
@@ -490,7 +479,7 @@ PAGE = r"""
     if (ings.length) {
       const left = el("div");
       left.appendChild(el("h3", "", "Ingredients"));
-      left.appendChild(el("p", "hint", "Tick items off as you gather them"));
+      left.appendChild(el("p", "hint", "Tick items off as you gather them."));
       const ul = el("ul", "ing");
       ings.forEach((text) => {
         const li = el("li");
@@ -509,7 +498,7 @@ PAGE = r"""
     if (steps.length) {
       const right = el("div");
       right.appendChild(el("h3", "", "Method"));
-      right.appendChild(el("p", "hint", "Tap a step to mark it done"));
+      right.appendChild(el("p", "hint", "Tap a step to mark it done."));
       const ol = el("ol", "steps");
       steps.forEach((text) => {
         const li = el("li", "", text);
@@ -519,7 +508,7 @@ PAGE = r"""
       right.appendChild(ol);
       cols.appendChild(right);
     }
-    body.appendChild(cols);
+    card.appendChild(cols);
 
     // tips / notes if the recipe has them
     keys.forEach((k) => {
@@ -532,22 +521,22 @@ PAGE = r"""
       const ul = el("ul");
       items.forEach((t) => ul.appendChild(el("li", "", t)));
       box.appendChild(ul);
-      body.appendChild(box);
+      card.appendChild(box);
     });
 
     // actions
     const actions = el("div", "actions");
-    const copyBtn = el("button", "act", "📋 Copy recipe");
-    const printBtn = el("button", "act", "🖨 Print");
-    const againBtn = el("button", "act", "🍳 Cook something else");
+    const copyBtn = el("button", "act", "Copy recipe");
+    const printBtn = el("button", "act", "Print");
+    const againBtn = el("button", "act", "New recipe");
     [copyBtn, printBtn, againBtn].forEach((b) => { b.type = "button"; actions.appendChild(b); });
     copyBtn.addEventListener("click", async () => {
       const text = [title, metaTexts.join(" · "), "", "INGREDIENTS"]
         .concat(ings.map((x) => "- " + x), ["", "METHOD"], steps.map((x, i) => (i + 1) + ". " + x))
         .join("\n");
-      try { await navigator.clipboard.writeText(text); copyBtn.textContent = "✅ Copied!"; }
+      try { await navigator.clipboard.writeText(text); copyBtn.textContent = "Copied"; }
       catch (e) { copyBtn.textContent = "Couldn't copy"; }
-      setTimeout(() => { copyBtn.textContent = "📋 Copy recipe"; }, 2000);
+      setTimeout(() => { copyBtn.textContent = "Copy recipe"; }, 2000);
     });
     printBtn.addEventListener("click", () => window.print());
     againBtn.addEventListener("click", () => {
@@ -555,14 +544,40 @@ PAGE = r"""
       $("food").focus();
       $("food").select();
     });
-    body.appendChild(actions);
+    card.appendChild(actions);
 
-    card.appendChild(body);
     out.appendChild(card);
     card.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  // ---------- go! ----------
+  // ---------- ask the server (retries if it is waking up or busy) ----------
+  async function requestRecipe(food, constraints) {
+    let lastError = "";
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      let note = "The server is waking up. Trying again…";
+      try {
+        const res = await fetch("/recipe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request: food, constraints: constraints })
+        });
+        let data = null;
+        try { data = await res.json(); } catch (e) {}
+        if (res.ok && data) return { data: data };
+        lastError = (data && typeof data.detail === "string") ? data.detail : "";
+        if (data && res.status < 500) return { error: lastError };
+        if (data) note = "The AI service is busy. Trying again…";
+      } catch (e) {
+        lastError = String(e);
+        note = "Lost the connection. Trying again…";
+      }
+      if (attempt === 3) break;
+      setLoadingNote(note);
+      await wait(8000);
+    }
+    return { error: lastError };
+  }
+
   async function go() {
     const food = $("food").value.trim();
     const btn = $("go");
@@ -570,24 +585,13 @@ PAGE = r"""
     showLoading();
     btn.disabled = true;
     btn.textContent = "Cooking…";
-    try {
-      const res = await fetch("/recipe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request: food, constraints: $("cons").value })
-      });
-      let data = null;
-      try { data = await res.json(); } catch (e) {}
-      clearInterval(loadTimer);
-      if (res.ok && data) {
-        saveRecent(food);
-        render(data, food);
-      } else {
-        showError("ChefGPT couldn't make that recipe right now. The AI service may be busy, so please try again in a moment.", data && data.detail);
-      }
-    } catch (e) {
-      clearInterval(loadTimer);
-      showError("Couldn't reach the server. Check your connection and try again.", e);
+    const result = await requestRecipe(food, $("cons").value);
+    clearInterval(loadTimer);
+    if (result.data) {
+      saveRecent(food);
+      render(result.data, food);
+    } else {
+      showError("Couldn't get a recipe right now. The AI service may be busy, so try again in a moment.", result.error);
     }
     btn.disabled = false;
     btn.textContent = "Get recipe";
