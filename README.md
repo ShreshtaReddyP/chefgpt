@@ -5,9 +5,9 @@
 ChefGPT is a generative-AI recipe assistant that combines recipe generation with dietary constraint evaluation. Enter a dish and your requirements, and ChefGPT generates a recipe designed around them.
 
 <!-- Replace with your actual screenshot or GIF -->
-![ChefGPT Demo](docs/images/chefgpt-demo.gif)
+![ChefGPT Demo] ## Demo
 
-[▶ Watch Demo](YOUR_DEMO_VIDEO_LINK) · [Explore the Code](.)
+[▶ Watch ChefGPT Demo](./assets/chefgpt-demo.mp4)
 
 ---
 
