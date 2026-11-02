@@ -1,4 +1,4 @@
-ChefGPT
+
 ChefGPT is a generative-AI recipe assistant that turns a dish idea and dietary constraints into a recipe. It is designed to help users explore meal ideas while checking the recipe against the constraints they provide.
 Features
 - Generate a recipe from a dish, ingredient, or meal idea.
