@@ -6,8 +6,10 @@ ChefGPT is a generative-AI recipe assistant that combines recipe generation with
 
 <!-- Replace with your actual screenshot or GIF -->
 ![ChefGPT Demo] ## Demo
+## Demo
 
-[▶ Watch ChefGPT Demo](./assets/chefgpt-demo.mp4)
+
+[▶ Watch ChefGPT Demo](./demovideo_chefgpt.mp4)
 
 ---
 
