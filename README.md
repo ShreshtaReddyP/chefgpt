@@ -26,30 +26,6 @@ chefgpt/
     └── pipeline.py      # recipe generation pipeline
 The web page is served from GET /. Recipe generation is handled by POST /recipe, which passes the submitted dish and constraints to the pipeline. The optional GET /photo endpoint searches for food photos.
 Getting started
-1. Clone the repository
-git clone <YOUR_REPOSITORY_URL>
-cd chefgpt
-Replace <YOUR_REPOSITORY_URL> with the repository's Git URL.
-2. Create and activate a virtual environment
-Windows (PowerShell):
-py -m venv .venv
-.\.venv\Scripts\Activate.ps1
-macOS / Linux:
-python3 -m venv .venv
-source .venv/bin/activate
-3. Install dependencies
-python -m pip install -r requirements.txt
-4. Configure environment variables
-Create a .env file in the project root and add your API key:
-GEMINI_API_KEY=your_gemini_api_key
-For food-photo search, you can also add:
-PIXABAY_API_KEY=your_pixabay_api_key
-The Pixabay key is optional. Without it, recipe generation can still work, but food photos may not be returned.
-
-Make sure .env is listed in .gitignore. Never commit API keys or share them publicly.
-5. Run the application
-uvicorn api:app --reload
-Open the local address shown in the terminal (typically http://127.0.0.1:8000).
 Deploying on Render
 A typical Render Web Service configuration for this project:
 - Build command: pip install -r requirements.txt
