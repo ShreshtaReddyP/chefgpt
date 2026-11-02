@@ -79,3 +79,9 @@ Safety and limitations
 ChefGPT is an educational AI recipe assistant, not a substitute for professional nutrition or medical advice. Always verify allergens and dietary suitability yourself. AI outputs can be inaccurate or incomplete.
 License
 No license is specified here. Add a license file if you intend to distribute or reuse this project publicly.
+Chefgpt Homepage:
+<img width="1391" height="786" alt="image" src="https://github.com/user-attachments/assets/d6627b1c-720e-43cf-8b6a-f0422569522c" />
+<img width="1392" height="842" alt="image" src="https://github.com/user-attachments/assets/5d10e027-81af-40b7-b837-98b774c74786" />
+<img width="1392" height="852" alt="image" src="https://github.com/user-attachments/assets/4468a6a4-de43-4eba-af0b-19e8a65f949a" />
+
+
