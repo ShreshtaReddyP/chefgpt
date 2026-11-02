@@ -1,3 +1,4 @@
+
 # ChefGPT — AI Recipe Assistant
 
 **Turn a meal idea into a recipe that respects your dietary constraints.**
@@ -8,6 +9,7 @@ ChefGPT is a generative-AI recipe assistant that combines recipe generation with
 ![ChefGPT Demo] ## Demo
 ## Demo
 
+https://github.com/user-attachments/assets/b81f1711-ea06-44b0-8594-fc60ee65fd14
 
 [▶ Watch ChefGPT Demo](./demovideo_chefgpt.mp4)
 
