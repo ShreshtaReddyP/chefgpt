@@ -12,8 +12,6 @@ import urllib.request
 
 from typing import List
 
-
-
 from fastapi import FastAPI, HTTPException, Query
 
 from fastapi.encoders import jsonable_encoder
@@ -22,27 +20,15 @@ from fastapi.responses import HTMLResponse
 
 from pydantic import BaseModel
 
-
-
 from chefgpt.pipeline import run
 
-
-
 app = FastAPI(title="ChefGPT")
-
-
-
-
 
 class RecipeRequest(BaseModel):
 
     request: str
 
     constraints: str = ""
-
-
-
-
 
 # ---------------------------------------------------------------------------
 
@@ -53,10 +39,6 @@ class RecipeRequest(BaseModel):
 PHOTO_CACHE = {}
 
 CACHE_SECONDS = 24 * 60 * 60
-
-
-
-
 
 SYNONYMS = {
 
@@ -98,25 +80,13 @@ MAIN_INGREDIENTS = MEAT_WORDS | {
 
 }
 
-
-
-
-
 def _stem(word):
 
     return word[:-1] if len(word) > 3 and word.endswith("s") else word
 
-
-
-
-
 def _words(text):
 
     return [_stem(w) for w in re.findall(r"[a-z]+", text.lower())]
-
-
-
-
 
 def _accepts(query, tags):
 
@@ -130,13 +100,9 @@ def _accepts(query, tags):
 
     tokens = set(_words(tags))
 
-
-
     def has(word):
 
         return bool(tokens & SYNONYMS.get(word, {word}))
-
-
 
     head, others = words[-1], words[:-1]
 
@@ -157,10 +123,6 @@ def _accepts(query, tags):
         return False
 
     return True
-
-
-
-
 
 def _pixabay_search(key, query):
 
@@ -188,7 +150,7 @@ def _pixabay_search(key, query):
 
     req = urllib.request.Request(
 
-        "https://pixabay.com/api/?" + params, headers={"User-Agent": "ChefGPT"}
+        "https\://pixabay.com/api/?" + params, headers={"User-Agent": "ChefGPT"}
 
     )
 
@@ -207,10 +169,6 @@ def _pixabay_search(key, query):
             return hit.get("largeImageURL") or hit.get("webformatURL")
 
     return None
-
-
-
-
 
 @app.get("/photo")
 
@@ -260,10 +218,6 @@ def photo(q: List[str] = Query(default=[])):
 
     return {"url": None}
 
-
-
-
-
 PAGE = r"""
 
 <!DOCTYPE html>
@@ -280,164 +234,58 @@ PAGE = r"""
 
 <title>ChefGPT</title>
 
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%231e4637%22/><text x=%2232%22 y=%2246%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23f9f8f4%22 font-family=%22Georgia,serif%22>C</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http\://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%231e4637%22/><text x=%2232%22 y=%2246%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23f9f8f4%22 font-family=%22Georgia,serif%22>C</text></svg>">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https\://fonts.googleapis.com">
 
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https\://fonts.gstatic.com" crossorigin>
 
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https\://fonts.googleapis.com/css2?family=Newsreader:ital,wght\@0,400;0,500;0,600;1,400&family=Instrument+Sans:wght\@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-
-  :root {
-  --cream: #fff8e9;
-  --paper: #fffdf7;
-  --ink: #18352d;
-  --green: #285b49;
-  --green-light: #dce9d9;
-  --tomato: #e76d56;
-  --peach: #f5c6b8;
-  --yellow: #f3d878;
-  --muted: #777c70;
-  --line: #d9d8c9;
-  --serif: "Newsreader", Georgia, serif;
-  --sans: "Instrument Sans", system-ui, sans-serif;
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  margin: 0; background: var(--cream); color: var(--ink);
-  font-family: var(--sans); font-size: 16px; line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-}
-button, input { font: inherit; }
-button { color: inherit; }
-:focus-visible { outline: 3px solid var(--tomato); outline-offset: 3px; }
-.page { max-width: 1180px; margin: 0 auto; padding: 0 32px 80px; }
-.top {
-  display: flex; justify-content: space-between; align-items: center; gap: 20px;
-  padding: 28px 0 22px; border-bottom: 2px solid var(--ink);
-}
-.logo { font-family: var(--serif); font-size: 2.2rem; font-weight: 600; letter-spacing: -.06em; }
-.top p { margin: 0; color: var(--muted); font-size: .9rem; }
-.order { position: relative; padding: 58px 0 36px; border-bottom: 1px solid var(--line); }
-.order::before {
-  content: "YOUR NEXT FAVORITE"; display: block; margin-bottom: 14px;
-  color: var(--tomato); font-size: .72rem; font-weight: 700; letter-spacing: .16em;
-}
-.sentence {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px;
-  margin: 0 0 22px; font-family: var(--serif);
-  font-size: clamp(2.5rem, 6vw, 4.8rem); line-height: 1.05; letter-spacing: -.055em;
-}
-.sentence.small { font-size: clamp(1.15rem, 3vw, 1.5rem); color: var(--muted); letter-spacing: -.02em; margin-bottom: 0; }
-.lead { font: inherit; color: inherit; }
-.blank {
-  flex: 1; min-width: 12ch; font: inherit; letter-spacing: inherit; color: var(--green);
-  background: transparent; border: 0; border-bottom: 3px solid var(--green);
-  border-radius: 0; padding: 0 4px 8px; outline: none; transition: border-color .2s;
-}
-.blank::placeholder { color: #b4b7a8; }
-.blank:focus, .blank:focus-visible { border-bottom-color: var(--tomato); outline: none; }
-.sentence.small .blank { color: var(--ink); border-bottom-width: 1px; }
-.row { margin-top: 30px; }
-.go {
-  background: var(--green); color: white; border: 2px solid var(--green);
-  padding: 15px 34px; border-radius: 999px; font-weight: 600; cursor: pointer;
-  transition: transform .2s, background .2s;
-}
-.go:hover { background: var(--tomato); border-color: var(--tomato); transform: translateY(-2px); }
-.go:disabled { opacity: .6; cursor: wait; transform: none; }
-.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; font-size: .9rem; }
-.chips[hidden] { display: none; }
-.chip-label { color: var(--muted); margin-right: 4px; }
-.chip {
-  background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
-  padding: 7px 15px; color: var(--green); cursor: pointer;
-  transition: background .2s, transform .2s;
-}
-.chip:hover { background: var(--yellow); border-color: var(--yellow); transform: translateY(-2px); }
-.recent-chip { background: var(--green-light); }
-#out { margin-top: 44px; }
-.loading { padding: 8px 0 40px; color: var(--muted); }
-.bar { position: relative; height: 5px; background: var(--line); overflow: hidden; margin-bottom: 20px; border-radius: 99px; }
-.bar::after {
-  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 30%;
-  background: var(--tomato); animation: slide 1.4s ease-in-out infinite;
-}
-@keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
-#loadmsg { font-family: var(--serif); font-style: italic; font-size: 1.6rem; color: var(--ink); }
-.loading small { display: block; margin-top: 4px; font-size: .88rem; }
-.error { background: var(--paper); border: 1px solid var(--line); border-left: 5px solid var(--tomato); border-radius: 14px; padding: 24px; }
-.error strong { display: block; font-size: 1.05rem; font-weight: 600; }
-.error .detail { margin: 8px 0 0; color: var(--muted); font-size: .88rem; word-break: break-word; }
-.ghost { margin-top: 16px; background: var(--green); color: white; border: 0; padding: 10px 20px; border-radius: 999px; font-weight: 600; cursor: pointer; }
-.ghost:hover { background: var(--tomato); }
-.recipe { animation: fade .5s ease; }
-@keyframes fade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-.title { font-family: var(--serif); font-weight: 600; font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.02; letter-spacing: -.055em; margin: 0 0 14px; }
-.desc { font-family: var(--serif); font-size: 1.3rem; line-height: 1.5; color: var(--muted); max-width: 60ch; margin: 0; }
-.photo-wrap {
-  display: none; position: relative; margin-top: 30px;
-  height: clamp(250px, 48vw, 480px); background: var(--peach); overflow: hidden;
-  border-radius: 22px; border: 5px solid var(--paper); box-shadow: 0 8px 0 var(--green-light);
-}
-.photo-wrap.show { display: block; animation: fade .7s ease; }
-.photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.credit { position: absolute; right: 12px; bottom: 12px; font-size: .72rem; color: white; background: rgba(24,53,45,.75); padding: 5px 10px; border-radius: 999px; }
-.credit:empty { display: none; }
-.stats { display: flex; flex-wrap: wrap; gap: 12px; margin: 30px 0 8px; }
-.stat { min-width: 110px; padding: 14px 18px; background: var(--green-light); border-radius: 12px; }
-.stat-label { font-size: .78rem; color: var(--muted); }
-.stat-val { font-family: var(--serif); font-size: 1.6rem; line-height: 1.2; }
-.safe { margin: 18px 0 0; padding: 16px 18px; background: #fff0dc; border-left: 3px solid var(--tomato); border-radius: 10px; font-size: .94rem; }
-.safe small { display: block; color: var(--muted); margin-top: 4px; }
-.cols { display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.4fr); gap: 48px; margin-top: 42px; }
-h3 { font-family: var(--serif); font-weight: 600; font-size: 2rem; letter-spacing: -.04em; margin: 0 0 4px; }
-.hint { margin: 0 0 14px; font-size: .84rem; color: var(--muted); }
-ul.ing { list-style: none; padding: 0; margin: 0; border-top: 2px solid var(--ink); }
-ul.ing li { border-bottom: 1px solid var(--line); }
-ul.ing label { display: flex; gap: 12px; align-items: flex-start; padding: 13px 0; cursor: pointer; }
-ul.ing input { margin-top: 5px; width: 17px; height: 17px; accent-color: var(--green); flex: none; }
-ul.ing li.done span { color: var(--muted); text-decoration: line-through; }
-ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; border-top: 2px solid var(--ink); }
-ol.steps li {
-  counter-increment: s; position: relative; padding: 18px 0 18px 54px;
-  border-bottom: 1px solid var(--line); cursor: pointer;
-  font-family: var(--serif); font-size: 1.2rem; line-height: 1.6; transition: opacity .2s;
-}
-ol.steps li::before { content: counter(s, decimal-leading-zero); position: absolute; left: 0; top: 16px; font-family: var(--sans); font-size: .85rem; font-weight: 700; color: var(--tomato); }
-ol.steps li.done { opacity: .4; }
-.extra { margin-top: 36px; padding: 22px 24px; background: var(--yellow); border-radius: 14px; }
-.extra ul { margin: 8px 0 0; padding-left: 18px; }
-.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); }
-.act { background: var(--paper); border: 1px solid var(--line); padding: 10px 18px; border-radius: 999px; font-weight: 500; font-size: .9rem; cursor: pointer; transition: background .2s; }
-.act:hover { background: var(--yellow); border-color: var(--yellow); }
-footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1px solid var(--line); padding-top: 20px; }
-@media (max-width: 760px) { .cols { grid-template-columns: 1fr; gap: 34px; } }
-@media (max-width: 640px) {
-  .page { padding: 0 18px 50px; }
-  .top { align-items: flex-start; }
-  .logo { font-size: 1.8rem; }
-  .top p { display: none; }
-  .order { padding: 38px 0 28px; }
-  .sentence { font-size: clamp(2.2rem, 10vw, 3.4rem); }
-  .blank { min-width: 100%; }
-  .go { width: 100%; }
-  .photo-wrap { border-radius: 16px; }
-  .stat { flex: 1; }
-}
-@media print {
-  .top, .order, .actions, footer, .hint, .credit { display: none !important; }
-  body { background: white; }
-  #out { margin-top: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-  html { scroll-behavior: auto; }
-}
-
+:root{--cream:#f7f4ec;--paper:#fffefa;--ink:#182f28;--green:#254d3d;--green-light:#e2eadf;--tomato:#c95f45;--peach:#f0c7b6;--yellow:#f0d889;--muted:#73796f;--line:#d8d9ce;--serif:"Newsreader",Georgia,serif;--sans:"Instrument Sans",system-ui,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+button,input{font:inherit}button{color:inherit}:focus-visible{outline:3px solid var(--tomato);outline-offset:3px}
+.page{max-width:1320px;margin:0 auto;padding:0 5.2vw 80px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:24px 0;border-bottom:1px solid var(--ink)}
+.logo{font:600 2rem var(--serif);letter-spacing:-.065em}.top p{margin:0;color:var(--muted);font-size:.83rem;letter-spacing:.02em}
+.order{position:relative;isolation:isolate;overflow:hidden;margin:34px 0 0;padding:clamp(32px,6vw,78px);border-radius:30px;background:#e6ecdf;border:1px solid #d4dfd0}
+.order:after{content:"";position:absolute;z-index:-1;width:380px;height:380px;right:-90px;top:-160px;border:1px solid #c3d2bd;border-radius:50%;box-shadow:0 0 0 35px #e0e8d9,0 0 0 70px #dbe5d5;opacity:.8}
+.order:before{content:"A LITTLE INSPIRATION, A LOT OF FLAVOUR";display:block;margin-bottom:22px;color:var(--tomato);font-size:.68rem;font-weight:700;letter-spacing:.18em}
+.sentence{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin:0 0 20px;font:500 clamp(2.7rem,7.5vw,6.8rem)/.98 var(--serif);letter-spacing:-.065em}
+.sentence.small{font:400 clamp(1rem,2vw,1.25rem)/1.4 var(--sans);color:var(--muted);letter-spacing:0;margin:26px 0 0;max-width:900px}.lead{font:inherit;color:inherit}
+.blank{flex:1;min-width:12ch;font:inherit;letter-spacing:inherit;color:var(--green);background:transparent;border:0;border-bottom:2px solid #8aa18c;border-radius:0;padding:0 4px 10px;outline:none;transition:border-color .2s}
+.blank::placeholder{color:#9aa99a}.blank:focus,.blank:focus-visible{border-bottom-color:var(--tomato);outline:none}.sentence.small .blank{color:var(--ink);border-bottom-width:1px;min-width:18ch}
+.row{margin-top:32px}.go{background:var(--green);color:#fff;border:1px solid var(--green);padding:16px 30px;border-radius:7px;font-weight:600;cursor:pointer;box-shadow:5px 5px 0 #c2d0bd;transition:transform .2s,box-shadow .2s,background .2s}
+.go:hover{background:var(--tomato);border-color:var(--tomato);transform:translate(2px,2px);box-shadow:2px 2px 0 #c2d0bd}.go:disabled{opacity:.6;cursor:wait;transform:none}
+.chips{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:24px;font-size:.85rem}.chips[hidden]{display:none}.chip-label{color:var(--muted);margin-right:5px}
+.chip{background:rgba(255,254,250,.68);border:1px solid #cbd7c7;border-radius:4px;padding:8px 13px;color:var(--green);cursor:pointer;transition:background .2s,transform .2s}
+.chip:hover{background:var(--yellow);border-color:var(--yellow);transform:translateY(-2px)}.recent-chip{background:var(--green-light)}
+#out{margin-top:clamp(38px,6vw,76px)}.loading{padding:8px 0 40px;color:var(--muted)}.bar{position:relative;height:4px;background:var(--line);overflow:hidden;margin-bottom:20px;border-radius:99px}
+.bar:after{content:"";position:absolute;top:0;bottom:0;left:0;width:30%;background:var(--tomato);animation:slide 1.4s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}#loadmsg{font:italic 1.7rem var(--serif);color:var(--ink)}.loading small{display:block;margin-top:4px;font-size:.88rem}
+.error{background:var(--paper);border:1px solid var(--line);border-left:5px solid var(--tomato);border-radius:12px;padding:24px}.error strong{display:block;font-size:1.05rem;font-weight:600}.error .detail{margin:8px 0 0;color:var(--muted);font-size:.88rem;word-break:break-word}
+.ghost{margin-top:16px;background:var(--green);color:#fff;border:0;padding:10px 20px;border-radius:5px;font-weight:600;cursor:pointer}.ghost:hover{background:var(--tomato)}
+.recipe{animation:fade .5s ease}@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.recipe-head{max-width:900px}.title{font:600 clamp(2.8rem,7vw,6rem)/.96 var(--serif);letter-spacing:-.065em;margin:0 0 16px}.desc{font:italic clamp(1.15rem,2vw,1.45rem)/1.5 var(--serif);color:var(--muted);max-width:62ch;margin:0}
+.photo-wrap{display:none;position:relative;margin-top:30px;height:clamp(280px,48vw,570px);background:var(--peach);overflow:hidden;border-radius:18px;border:0;box-shadow:0 18px 40px #263c2a18}
+.photo-wrap.show{display:block;animation:fade .7s ease}.photo-wrap img{width:100%;height:100%;object-fit:cover;display:block}.credit{position:absolute;right:14px;bottom:14px;font-size:.72rem;color:#fff;background:rgba(24,47,40,.78);padding:5px 10px;border-radius:3px}.credit:empty{display:none}
+.stats{display:flex;flex-wrap:wrap;gap:0;margin:28px 0 8px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.stat{min-width:130px;flex:1;padding:16px 20px 16px 0;background:transparent;border-right:1px solid var(--line);border-radius:0}.stat:not(:first-child){padding-left:20px}.stat:last-child{border-right:0}
+.stat-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}.stat-val{font:500 1.65rem/1.2 var(--serif)}
+.safe{margin:20px 0 0;padding:16px 18px;background:#f8ead9;border-left:3px solid var(--tomato);border-radius:5px;font-size:.94rem}.safe small{display:block;color:var(--muted);margin-top:4px}
+.cols{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.45fr);gap:clamp(30px,6vw,90px);margin-top:52px}
+h3{font:600 clamp(1.8rem,3vw,2.5rem)/1.1 var(--serif);letter-spacing:-.045em;margin:0 0 5px}.hint{margin:0 0 18px;font-size:.8rem;color:var(--muted)}
+ul.ing{list-style:none;padding:0;margin:0;border-top:1px solid var(--ink)}ul.ing li{border-bottom:1px solid var(--line)}ul.ing label{display:flex;gap:12px;align-items:flex-start;padding:13px 0;cursor:pointer}
+ul.ing input{margin-top:5px;width:17px;height:17px;accent-color:var(--green);flex:none}ul.ing li.done span{color:var(--muted);text-decoration:line-through}
+ol.steps{list-style:none;counter-reset:s;padding:0;margin:0;border-top:1px solid var(--ink)}ol.steps li{counter-increment:s;position:relative;padding:18px 0 18px 58px;border-bottom:1px solid var(--line);cursor:pointer;font:400 1.2rem/1.6 var(--serif);transition:opacity .2s}
+ol.steps li:before{content:counter(s,decimal-leading-zero);position:absolute;left:0;top:19px;font:700 .75rem var(--sans);letter-spacing:.08em;color:var(--tomato)}ol.steps li.done{opacity:.4}
+.extra{margin-top:36px;padding:24px 28px;background:#f0e1ad;border-radius:8px}.extra ul{margin:8px 0 0;padding-left:18px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:40px;padding-top:22px;border-top:1px solid var(--line)}.act{background:var(--paper);border:1px solid var(--line);padding:11px 18px;border-radius:5px;font-weight:500;font-size:.88rem;cursor:pointer;transition:background .2s}.act:hover{background:var(--yellow);border-color:var(--yellow)}
+footer{margin-top:54px;color:var(--muted);font-size:.78rem;border-top:1px solid var(--line);padding-top:20px}
+@media(max-width:760px){.cols{grid-template-columns:1fr;gap:34px}.order{padding:34px 26px}.order:after{right:-240px}.stat{min-width:50%}}
+@media(max-width:640px){.page{padding:0 16px 44px}.top{align-items:flex-start;padding:19px 0}.logo{font-size:1.75rem}.top p{display:none}.order{margin-top:18px;border-radius:18px;padding:32px 20px}.sentence{font-size:clamp(2.5rem,11vw,3.6rem)}.blank{min-width:100%}.sentence.small .blank{min-width:100%}.go{width:100%}.photo-wrap{border-radius:12px}.stat{flex:1;padding:12px 10px 12px 0}.stat:not(:first-child){padding-left:10px}}
+@media print{.top,.order,.actions,footer,.hint,.credit{display:none!important}body{background:#fff}#out{margin-top:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 </style>
 
 </head>
@@ -454,13 +302,11 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
     </header>
 
-
-
     <section class="order">
 
       <div class="sentence">
 
-        <label class="lead" for="food">I'd like to cook</label>
+        <label class="lead" for="food">What’s cooking?</label>
 
         <input class="blank" id="food" placeholder="chicken biryani" autocomplete="off">
 
@@ -498,23 +344,17 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
     </section>
 
-
-
     <main id="out" aria-live="polite"></main>
 
     <footer>ChefGPT · Powered by Gemini · Photos from Pixabay</footer>
 
   </div>
 
-
-
 <script>
 
   const $ = (id) => document.getElementById(id);
 
   const out = $("out");
-
-
 
   const LOADING_MSGS = ["Chopping the onions…", "Heating up the pan…", "Tasting for salt…", "Plating it up…"];
 
@@ -523,8 +363,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
   const EXTRA_RE = /tip|note|substitut/i;
 
   let loadTimer = null;
-
-
 
   function el(tag, cls, text) {
 
@@ -541,8 +379,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
   function prettyKey(k) { return k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()); }
 
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-
 
   // The recipe object is whichever nested object has an "ingredients" list.
 
@@ -622,17 +458,15 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
   }
 
-
-
   // ---------- photo ----------
 
   function photoQueries(title, food) {
 
     const t = (title || "").trim();
 
-    const paren = t.match(/**\(**([^)]+)**\)**/);
+    const paren = t.match(/****\(****([^)]+)****\)****/);
 
-    const base = t.replace(/**\(**[^)]***\)**/g, "").replace(/\s+/g, " ").trim();
+    const base = t.replace(/****\(****[^)]*****\)****/g, "").replace(/\s+/g, " ").trim();
 
     const english = paren ? paren[1].trim() : (base || food);
 
@@ -688,8 +522,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
   }
 
-
-
   // ---------- recent searches ----------
 
   function loadRecent() {
@@ -741,8 +573,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
     });
 
   }
-
-
 
   // ---------- loading and errors ----------
 
@@ -800,8 +630,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
   }
 
-
-
   // ---------- recipe ----------
 
   function render(data, food) {
@@ -827,8 +655,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
     const stepKey = keys.find((k) => /(step|instruction|direction|method)/i.test(k) && Array.isArray(r[k]));
 
     const title = titleKey ? String(r[titleKey]) : food.charAt(0).toUpperCase() + food.slice(1);
-
-
 
     // quick facts and an optional description
 
@@ -866,11 +692,7 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
     });
 
-
-
     const card = el("article", "recipe");
-
-
 
     const head = el("div", "recipe-head");
 
@@ -879,8 +701,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
     if (desc) head.appendChild(el("p", "desc", desc));
 
     card.appendChild(head);
-
-
 
     // photo stays hidden until it has loaded
 
@@ -900,11 +720,7 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
     loadPhoto(title, food, img, wrap, credit);
 
-
-
     if (stats.children.length) card.appendChild(stats);
-
-
 
     // constraints
 
@@ -933,8 +749,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
       }
 
     }
-
-
 
     // ingredients + method
 
@@ -1010,8 +824,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
     card.appendChild(cols);
 
-
-
     // tips / notes if the recipe has them
 
     keys.forEach((k) => {
@@ -1038,8 +850,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
     });
 
-
-
     // actions
 
     const actions = el("div", "actions");
@@ -1058,7 +868,7 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
         .concat(ings.map((x) => "- " + x), ["", "METHOD"], steps.map((x, i) => (i + 1) + ". " + x))
 
-        .join("**\n**");
+        .join("****\n****");
 
       try { await navigator.clipboard.writeText(text); copyBtn.textContent = "Copied"; }
 
@@ -1082,15 +892,11 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
     card.appendChild(actions);
 
-
-
     out.appendChild(card);
 
     card.scrollIntoView({ behavior: "smooth", block: "start" });
 
   }
-
-
 
   // ---------- ask the server (retries if it is waking up or busy) ----------
 
@@ -1146,8 +952,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
   }
 
-
-
   async function go() {
 
     const food = $("food").value.trim();
@@ -1184,8 +988,6 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
   }
 
-
-
   $("go").addEventListener("click", go);
 
   $("food").addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
@@ -1208,19 +1010,11 @@ footer { margin-top: 54px; color: var(--muted); font-size: .82rem; border-top: 1
 
 """
 
-
-
-
-
 @app.get("/", response_class=HTMLResponse)
 
 def home():
 
     return PAGE
-
-
-
-
 
 @app.post("/recipe")
 
