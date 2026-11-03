@@ -147,7 +147,7 @@ PAGE = r"""
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
+  :root {
     --bone: #f9f8f4; --ink: #17201b; --muted: #667068; --line: #dcdfd6;
     --green: #1e4637; --green-dark: #163528; --saffron: #c98a10;
     --serif: "Newsreader", Georgia, "Times New Roman", serif;
@@ -361,6 +361,102 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
   .go { width: 100%; }
   .stat { margin-right: 14px; padding-right: 14px; }
 }
+
+
+  /* Voice cooking controls */
+  .voice-cook { margin: 16px 0 18px; padding: 16px; background: #e9eee5; border: 1px solid #dce0d6; border-radius: 12px; }
+  .voice-cook p { margin: 0 0 10px; color: var(--muted); font-size: .9rem; }
+  .voice-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+  .voice-controls button { border: 1px solid #c5cabd; background: #fffefa; border-radius: 7px; padding: 9px 13px; cursor: pointer; }
+  .voice-controls button.primary { background: var(--green); color: #fff; border-color: var(--green); }
+  .voice-status { display: block; margin-top: 10px; font-size: .85rem; color: var(--green); }
+
+
+
+  /* ChefGPT visual refresh — CSS only. Existing JS and loading sequence stay intact. */
+  :root {
+    --bone: #f7f5ef;
+    --ink: #202b25;
+    --muted: #747b70;
+    --line: #e1e2d9;
+    --green: #315f4b;
+    --green-dark: #244936;
+    --saffron: #e28a55;
+  }
+  body {
+    background:
+      radial-gradient(ellipse at 8% 0%, rgba(226,138,85,.12), transparent 32rem),
+      radial-gradient(ellipse at 95% 16%, rgba(119,157,119,.14), transparent 34rem),
+      var(--bone);
+  }
+  .page { max-width: 1040px; padding: 0 28px 64px; }
+  .top { border-bottom: 1px solid var(--line); padding: 24px 0 18px; }
+  .logo { color: var(--green); font-size: 2rem; letter-spacing: -.055em; }
+  .top p { letter-spacing: .01em; }
+  .order {
+    margin-top: 30px; padding: clamp(26px, 5vw, 54px);
+    border: 1px solid rgba(49,95,75,.13); border-radius: 24px;
+    background: rgba(255,255,255,.78);
+    box-shadow: 0 18px 55px rgba(32,43,37,.07);
+  }
+  .sentence { font-size: clamp(2rem, 4.7vw, 3.8rem); line-height: 1.1; letter-spacing: -.045em; gap: 8px 13px; }
+  .sentence.small { margin-top: 18px; font-size: clamp(1rem, 2vw, 1.2rem); }
+  .blank { border-bottom: 2px solid #b7c8bb; padding-bottom: 7px; }
+  .blank::placeholder { color: #a9b2a8; }
+  .blank:focus { border-bottom-color: var(--saffron); }
+  .row { margin-top: 26px; }
+  .go {
+    border-radius: 999px; padding: 13px 26px; background: var(--green);
+    box-shadow: 0 7px 18px rgba(49,95,75,.2); transition: transform .18s, box-shadow .18s, background .18s;
+  }
+  .go:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(49,95,75,.24); }
+  .chips { gap: 8px; }
+  .chip {
+    padding: 7px 12px; border: 1px solid #e1e6dc; border-radius: 999px;
+    background: #f8faf5; transition: background .15s, transform .15s, border-color .15s;
+  }
+  .chip:hover { transform: translateY(-1px); background: #eaf1e8; border-color: #c5d6c7; }
+  #out { margin-top: 46px; }
+  .loading { padding: 20px 0 44px; }
+  .bar { height: 5px; border-radius: 999px; background: #e5e8df; margin-bottom: 22px; }
+  .bar::after { width: 26%; border-radius: 999px; background: linear-gradient(90deg, var(--green), var(--saffron)); animation: slide 1.35s cubic-bezier(.4,0,.2,1) infinite; }
+  #loadmsg { font-size: clamp(1.35rem, 3vw, 1.8rem); color: var(--green); }
+  .loading small { margin-top: 7px; }
+  .title { font-size: clamp(2.4rem, 5.4vw, 4.4rem); letter-spacing: -.055em; }
+  .desc { font-size: 1.22rem; }
+  .photo-wrap { border-radius: 20px; box-shadow: 0 18px 45px rgba(32,43,37,.12); }
+  .stats { background: rgba(255,255,255,.5); border-radius: 14px; padding: 0 18px; }
+  .stat { padding: 15px 22px 15px 0; margin-right: 22px; }
+  .stat-label { text-transform: uppercase; letter-spacing: .09em; font-size: .7rem; }
+  .stat-val { font-size: 1.55rem; color: var(--green); }
+  .safe { border: 1px solid #f0d5c4; border-left: 4px solid var(--saffron); background: #fff6ee; border-radius: 12px; padding: 14px 16px; }
+  .cols { gap: clamp(28px, 5vw, 56px); }
+  h3 { font-size: 1.8rem; }
+  ul.ing, ol.steps { border-top-color: #cbd4c9; }
+  ul.ing li, ol.steps li { border-bottom-color: #e4e7df; }
+  ul.ing label { padding: 13px 0; }
+  ul.ing input { accent-color: var(--green); }
+  ol.steps li { padding-top: 18px; padding-bottom: 18px; }
+  ol.steps li::before { color: var(--saffron); font-size: 1.8rem; }
+  .voice-cook { background: #eef4eb; border-color: #d9e5d6; border-radius: 14px; }
+  .voice-controls button { border-radius: 999px; transition: transform .15s, background .15s; }
+  .voice-controls button:hover { transform: translateY(-1px); }
+  .voice-controls button.primary { background: var(--green); }
+  .extra { background: #fff3df; border: 1px solid #f1dfbd; border-radius: 14px; }
+  .actions { margin-top: 32px; }
+  .act { border-radius: 999px; padding: 10px 17px; background: rgba(255,255,255,.75); }
+  .act:hover { background: #eaf1e8; border-color: #c5d6c7; }
+  footer { border-top: 1px solid var(--line); padding-top: 18px; }
+  @media (max-width: 640px) {
+    .page { padding: 0 16px 38px; }
+    .order { margin-top: 18px; padding: 26px 20px; border-radius: 18px; }
+    .sentence { font-size: clamp(2rem, 9vw, 3rem); }
+    .blank { min-width: 100%; }
+    .go { width: 100%; }
+    .stats { padding: 0 12px; }
+    .stat { margin-right: 12px; padding-right: 12px; }
+  }
+
 </style>
 </head>
 <body>
@@ -637,10 +733,86 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
       const right = el("div");
       right.appendChild(el("h3", "", "Method"));
       right.appendChild(el("p", "hint", "Tap a step to mark it done."));
+
+      // Hands-free voice cooking. Uses the browser's built-in speech synthesis.
+      const voiceBox = el("section", "voice-cook");
+      voiceBox.appendChild(el("strong", "", "Voice cooking"));
+      voiceBox.appendChild(el("p", "", "Listen to each instruction while you cook."));
+      const voiceControls = el("div", "voice-controls");
+      const startVoice = el("button", "primary", "▶ Read step");
+      const prevVoice = el("button", "", "← Previous");
+      const pauseVoice = el("button", "", "Ⅱ Pause");
+      const nextVoice = el("button", "", "Next →");
+      [startVoice, prevVoice, pauseVoice, nextVoice].forEach((b) => {
+        b.type = "button";
+        voiceControls.appendChild(b);
+      });
+      const voiceStatus = el("span", "voice-status", "Ready to start.");
+      voiceBox.appendChild(voiceControls);
+      voiceBox.appendChild(voiceStatus);
+      right.appendChild(voiceBox);
+
+      let activeVoiceStep = 0;
+      function stopSpeaking() {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      }
+      function speakVoiceStep() {
+        if (!("speechSynthesis" in window)) {
+          voiceStatus.textContent = "Voice playback isn't supported in this browser.";
+          return;
+        }
+        if (!steps.length) return;
+        stopSpeaking();
+        const spokenText = "Step " + (activeVoiceStep + 1) + ". " + steps[activeVoiceStep];
+        const utterance = new SpeechSynthesisUtterance(spokenText);
+        utterance.rate = 0.92;
+        utterance.onstart = () => {
+          voiceStatus.textContent = "Speaking step " + (activeVoiceStep + 1) + " of " + steps.length + ".";
+          startVoice.textContent = "▶ Read again";
+        };
+        utterance.onend = () => {
+          voiceStatus.textContent = "Finished step " + (activeVoiceStep + 1) + ". Say or tap Next when ready.";
+        };
+        utterance.onerror = () => {
+          voiceStatus.textContent = "Couldn't play this step. Try Read step again.";
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+      startVoice.addEventListener("click", speakVoiceStep);
+      prevVoice.addEventListener("click", () => {
+        activeVoiceStep = Math.max(0, activeVoiceStep - 1);
+        speakVoiceStep();
+      });
+      nextVoice.addEventListener("click", () => {
+        activeVoiceStep = Math.min(steps.length - 1, activeVoiceStep + 1);
+        speakVoiceStep();
+      });
+      pauseVoice.addEventListener("click", () => {
+        if (!("speechSynthesis" in window)) {
+          voiceStatus.textContent = "Voice playback isn't supported in this browser.";
+          return;
+        }
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+          pauseVoice.textContent = "Ⅱ Pause";
+          voiceStatus.textContent = "Resuming voice playback.";
+        } else if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.pause();
+          pauseVoice.textContent = "▶ Resume";
+          voiceStatus.textContent = "Paused.";
+        } else {
+          speakVoiceStep();
+        }
+      });
+
       const ol = el("ol", "steps");
-      steps.forEach((text) => {
+      steps.forEach((text, index) => {
         const li = el("li", "", text);
-        li.addEventListener("click", () => li.classList.toggle("done"));
+        li.addEventListener("click", () => {
+          li.classList.toggle("done");
+          activeVoiceStep = index;
+          voiceStatus.textContent = "Selected step " + (index + 1) + ". Tap Read step to hear it.";
+        });
         ol.appendChild(li);
       });
       right.appendChild(ol);
