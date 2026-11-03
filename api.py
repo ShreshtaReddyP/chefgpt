@@ -206,19 +206,61 @@ PAGE = r"""
   .chip:hover { border-bottom-color: var(--green); }
   .recent-chip { color: var(--ink); }
 
-  /* ---------- loading and errors ---------- */
+  /* ---------- animated cooking loader and errors ---------- */
   #out { margin-top: 40px; }
-  .loading { padding: 8px 0 40px; color: var(--muted); }
-  .bar { position: relative; height: 2px; background: var(--line); overflow: hidden; margin-bottom: 20px; }
-  .bar::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: var(--green); animation: slide 1.4s ease-in-out infinite; }
-  @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
-  #loadmsg { font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--ink); }
-  .loading small { display: block; margin-top: 4px; font-size: .88rem; }
+  .loading {
+    --loader-cream: #fff7e8; --loader-coral: #ff795e; --loader-orange: #ffb84d;
+    --loader-pink: #f7a8b8; --loader-teal: #4fb7a5; --loader-ink: #273c34;
+    position: relative; overflow: hidden; padding: clamp(22px, 5vw, 42px);
+    border: 1px solid #f1d8bd; border-radius: 22px;
+    background: radial-gradient(circle at 90% 10%, #ffe0c5 0, transparent 32%),
+                radial-gradient(circle at 8% 95%, #fce0e5 0, transparent 34%), var(--loader-cream);
+    color: var(--loader-ink); isolation: isolate;
+  }
+  .loading-scene { width: min(100%, 420px); height: 190px; margin: 0 auto 18px; position: relative; }
+  .counter { position: absolute; height: 18px; width: 100%; bottom: 20px; border-radius: 50%; background: #edc9a5; }
+  .pot { position: absolute; z-index: 2; width: 150px; height: 84px; left: 50%; bottom: 37px;
+    transform: translateX(-50%); border-radius: 12px 12px 34px 34px;
+    background: linear-gradient(110deg, #4c7d70, #28584d 65%, #1f443a);
+    box-shadow: 0 12px 0 #d6a77f, 0 18px 25px #b7795540; }
+  .pot::before { content: ""; position: absolute; left: -19px; right: -19px; top: -9px; height: 15px;
+    border-radius: 9px; background: #f7a65b; border: 4px solid #fff0d7; }
+  .pot::after { content: ""; position: absolute; left: 50%; top: 28px; width: 38px; height: 9px;
+    transform: translateX(-50%); border-radius: 50%; background: #f6d98d; opacity: .9; }
+  .pot-handle { position: absolute; z-index: 1; width: 55px; height: 25px; left: calc(50% - 102px); bottom: 75px;
+    border: 9px solid #e68b53; border-right: 0; border-radius: 18px 0 0 18px; }
+  .pot-handle.right { left: calc(50% + 47px); border: 9px solid #e68b53; border-left: 0; border-radius: 0 18px 18px 0; }
+  .steam { position: absolute; bottom: 115px; left: 50%; width: 15px; height: 42px; border-radius: 50%;
+    border-left: 4px solid #e99b7c; opacity: .75; animation: steam 1.8s ease-in-out infinite; }
+  .steam.s2 { margin-left: -22px; height: 30px; animation-delay: -.6s; }
+  .steam.s3 { margin-left: 20px; height: 36px; animation-delay: -1.1s; }
+  .ingredient { position: absolute; z-index: 3; width: 24px; height: 24px; border-radius: 50%;
+    box-shadow: inset -4px -4px 0 #00000012; animation: float 2.8s ease-in-out infinite; }
+  .ingredient.i1 { left: 18%; top: 54px; background: var(--loader-coral); animation-delay: -.4s; }
+  .ingredient.i2 { right: 17%; top: 39px; width: 18px; height: 18px; background: var(--loader-teal); animation-delay: -1.2s; }
+  .ingredient.i3 { right: 25%; top: 91px; width: 13px; height: 13px; background: var(--loader-orange); animation-delay: -.8s; }
+  .ingredient.i4 { left: 28%; top: 30px; width: 15px; height: 15px; background: var(--loader-pink); animation-delay: -1.7s; }
+  .loading-copy { text-align: center; }
+  #loadmsg { font-family: var(--serif); font-size: clamp(1.45rem, 4vw, 2rem); color: var(--loader-ink); font-style: italic; margin: 0; }
+  .loading small { display: block; margin-top: 7px; color: #776c61; font-size: .9rem; }
+  .loading-progress { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+  .loading-progress span { width: 8px; height: 8px; border-radius: 50%; background: #e8c6a8; transition: transform .25s, background .25s; }
+  .loading-progress span.active { background: var(--loader-coral); transform: scale(1.35); }
+  @keyframes steam { 0%,100% { transform: translateY(0) scaleX(1); opacity: .2; } 50% { transform: translateY(-14px) scaleX(1.3); opacity: .85; } }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-13px) rotate(12deg); } }
   .error { border-left: 3px solid var(--saffron); padding: 6px 0 6px 18px; }
   .error strong { display: block; font-weight: 600; }
   .error .detail { margin: 6px 0 0; color: var(--muted); font-size: .88rem; word-break: break-word; }
   .ghost { margin-top: 14px; background: none; border: 1px solid var(--ink); padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; }
   .ghost:hover { background: var(--ink); color: #fff; }
+  @media (max-width: 520px) {
+    .loading-scene { height: 165px; transform: scale(.9); transform-origin: center bottom; margin-bottom: 8px; }
+    .loading { padding: 22px 16px 28px; border-radius: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .steam, .ingredient { animation: none !important; }
+    .loading-progress span { transition: none; }
+  }
 
   /* ---------- recipe ---------- */
   .title {
@@ -401,7 +443,12 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
   const $ = (id) => document.getElementById(id);
   const out = $("out");
 
-  const LOADING_MSGS = ["Chopping the onions…", "Heating up the pan…", "Tasting for salt…", "Plating it up…"];
+  const LOADING_MSGS = [
+    "Checking your ingredients...",
+    "Mixing up some delicious ideas...",
+    "Adding a little ChefGPT magic...",
+    "Your recipe is almost ready!"
+  ];
   const RECENT_KEY = "chefgpt_recent";
   const EXTRA_RE = /tip|note|substitut/i;
   let loadTimer = null;
@@ -518,15 +565,47 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
   // ---------- loading and errors ----------
   function showLoading() {
     let i = 0;
-    out.innerHTML = '<div class="loading"><div class="bar"></div><div id="loadmsg"></div><small id="loadnote"></small></div>';
-    $("loadmsg").textContent = LOADING_MSGS[0];
-    setLoadingNote("This can take up to a minute.");
     clearInterval(loadTimer);
+
+    out.innerHTML = `
+      <section class="loading" role="status" aria-live="polite" aria-atomic="true">
+        <div class="loading-scene" aria-hidden="true">
+          <div class="counter"></div>
+          <div class="pot-handle"></div>
+          <div class="pot-handle right"></div>
+          <div class="steam s1"></div>
+          <div class="steam s2"></div>
+          <div class="steam s3"></div>
+          <div class="ingredient i1"></div>
+          <div class="ingredient i2"></div>
+          <div class="ingredient i3"></div>
+          <div class="ingredient i4"></div>
+          <div class="pot"></div>
+        </div>
+        <div class="loading-copy">
+          <p id="loadmsg"></p>
+          <small id="loadnote"></small>
+          <div class="loading-progress" aria-hidden="true">
+            <span class="active"></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </section>`;
+
+    updateLoadingMessage(i);
+    setLoadingNote("This can take up to a minute.");
+
     loadTimer = setInterval(() => {
       i = (i + 1) % LOADING_MSGS.length;
-      const n = $("loadmsg");
-      if (n) n.textContent = LOADING_MSGS[i];
+      updateLoadingMessage(i);
     }, 2500);
+  }
+
+  function updateLoadingMessage(index) {
+    const message = $("loadmsg");
+    if (message) message.textContent = LOADING_MSGS[index];
+
+    const dots = out.querySelectorAll(".loading-progress span");
+    dots.forEach((dot, i) => dot.classList.toggle("active", i === index));
   }
   function setLoadingNote(text) {
     const n = $("loadnote");
