@@ -14,7 +14,7 @@ def call_json(system: str, messages: list[dict], max_tokens: int = 1500) -> dict
     if _client is None:
         _client = genai.Client(
             api_key=os.environ["GEMINI_API_KEY"],
-            http_options=types.HttpOptions(timeout=30000),
+            http_options=types.HttpOptions(timeout=60000),
         )
     contents = [
         types.Content(role="model" if m["role"] == "assistant" else "user",
@@ -35,8 +35,8 @@ def call_json(system: str, messages: list[dict], max_tokens: int = 1500) -> dict
             )
             break
         except errors.ServerError as e:  # 503 busy: worth retrying
-            print(f"Google is busy ({e.code}), retry {attempt + 1}/3 in 3s...")
-            time.sleep(3)
+            print(f"Google is busy ({e.code}), retry {attempt + 1}/10 in 10s...")
+            time.sleep(10)
         except errors.ClientError as e:  # 429, 404, bad key: retrying won't help
             raise RuntimeError(f"Google refused the request ({e.code}): {e.message}")
 
