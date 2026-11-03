@@ -21,13 +21,13 @@ from pydantic import BaseModel, Field
 
 router = APIRouter()
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+    for m in os.environ.get("GEMINI_FALLBACK_MODELS", "gemini-3.8-flash").split(",")
 FALLBACK_MODELS = [
     m.strip()
     for m in os.environ.get("GEMINI_FALLBACK_MODELS", "gemini-3.1-flash-lite").split(",")
     if m.strip()
 ]
-RETRIES_PER_MODEL = 2
+RETRIES_PER_MODEL = 1
 ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_IMAGE_BYTES = 6 * 1024 * 1024
 
@@ -120,7 +120,10 @@ def _scan(req: ScanRequest) -> ScanResult:
             raise HTTPException(status_code=422, detail="Add a photo or at least one ingredient.")
         contents.append(_prompt(constraints, False, items))
 
-    client = genai.Client(api_key=key)
+       client = genai.Client(
+        api_key=key,
+        http_options=types.HttpOptions(timeout=30000),  # 30 seconds
+    )
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=ScanResult,
