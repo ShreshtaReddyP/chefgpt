@@ -209,33 +209,34 @@ PAGE = r"""
   /* ---------- animated cooking loader and errors ---------- */
   #out { margin-top: 40px; }
   .loading {
-    --loader-cream: #fff7e8; --loader-coral: #ff795e; --loader-orange: #ffb84d;
-    --loader-pink: #f7a8b8; --loader-teal: #4fb7a5; --loader-ink: #273c34;
+    --loader-cream: #fff4e6; --loader-coral: #ff5b35; --loader-orange: #b9f34a;
+    --loader-pink: #ff4fa3; --loader-teal: #7047eb; --loader-ink: #29152e;
     position: relative; overflow: hidden; padding: clamp(22px, 5vw, 42px);
-    border: 1px solid #f1d8bd; border-radius: 22px;
-    background: radial-gradient(circle at 90% 10%, #ffe0c5 0, transparent 32%),
-                radial-gradient(circle at 8% 95%, #fce0e5 0, transparent 34%), var(--loader-cream);
+    border: 1px solid #ffb99d; border-radius: 22px;
+    background: radial-gradient(circle at 90% 10%, #ff4fa326 0, transparent 32%),
+                radial-gradient(circle at 8% 95%, #7047eb1c 0, transparent 34%), var(--loader-cream);
     color: var(--loader-ink); isolation: isolate;
   }
   .loading-scene { width: min(100%, 420px); height: 190px; margin: 0 auto 18px; position: relative; }
-  .counter { position: absolute; height: 18px; width: 100%; bottom: 20px; border-radius: 50%; background: #edc9a5; }
+  .counter { position: absolute; height: 18px; width: 100%; bottom: 20px; border-radius: 50%; background: #ffdbbd; }
   .pot { position: absolute; z-index: 2; width: 150px; height: 84px; left: 50%; bottom: 37px;
     transform: translateX(-50%); border-radius: 12px 12px 34px 34px;
-    background: linear-gradient(110deg, #4c7d70, #28584d 65%, #1f443a);
+    background: linear-gradient(110deg, #7047eb, #4d2aa8 65%, #29152e);
     box-shadow: 0 12px 0 #d6a77f, 0 18px 25px #b7795540; }
   .pot::before { content: ""; position: absolute; left: -19px; right: -19px; top: -9px; height: 15px;
-    border-radius: 9px; background: #f7a65b; border: 4px solid #fff0d7; }
+    border-radius: 9px; background: #ff5b35; border: 4px solid #fff4e6; }
   .pot::after { content: ""; position: absolute; left: 50%; top: 28px; width: 38px; height: 9px;
     transform: translateX(-50%); border-radius: 50%; background: #f6d98d; opacity: .9; }
   .pot-handle { position: absolute; z-index: 1; width: 55px; height: 25px; left: calc(50% - 102px); bottom: 75px;
-    border: 9px solid #e68b53; border-right: 0; border-radius: 18px 0 0 18px; }
-  .pot-handle.right { left: calc(50% + 47px); border: 9px solid #e68b53; border-left: 0; border-radius: 0 18px 18px 0; }
+    border: 9px solid #ff5b35; border-right: 0; border-radius: 18px 0 0 18px; }
+  .pot-handle.right { left: calc(50% + 47px); border: 9px solid #ff5b35; border-left: 0; border-radius: 0 18px 18px 0; }
   .steam { position: absolute; bottom: 115px; left: 50%; width: 15px; height: 42px; border-radius: 50%;
-    border-left: 4px solid #e99b7c; opacity: .75; animation: steam 1.8s ease-in-out infinite; }
+    border-left: 4px solid #ff4fa3; opacity: .75; animation: steam 1.8s ease-in-out infinite; }
   .steam.s2 { margin-left: -22px; height: 30px; animation-delay: -.6s; }
   .steam.s3 { margin-left: 20px; height: 36px; animation-delay: -1.1s; }
-  .ingredient { position: absolute; z-index: 3; width: 24px; height: 24px; border-radius: 50%;
-    box-shadow: inset -4px -4px 0 #00000012; animation: float 2.8s ease-in-out infinite; }
+  .ingredient { position: absolute; z-index: 3; display: grid; place-items: center; width: 34px; height: 34px;
+    border-radius: 50%; font-size: 1.35rem; background: transparent !important; box-shadow: none;
+    animation: float 2.8s ease-in-out infinite; filter: drop-shadow(0 3px 3px #29152e20); }
   .ingredient.i1 { left: 18%; top: 54px; background: var(--loader-coral); animation-delay: -.4s; }
   .ingredient.i2 { right: 17%; top: 39px; width: 18px; height: 18px; background: var(--loader-teal); animation-delay: -1.2s; }
   .ingredient.i3 { right: 25%; top: 91px; width: 13px; height: 13px; background: var(--loader-orange); animation-delay: -.8s; }
@@ -244,8 +245,8 @@ PAGE = r"""
   #loadmsg { font-family: var(--serif); font-size: clamp(1.45rem, 4vw, 2rem); color: var(--loader-ink); font-style: italic; margin: 0; }
   .loading small { display: block; margin-top: 7px; color: #776c61; font-size: .9rem; }
   .loading-progress { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
-  .loading-progress span { width: 8px; height: 8px; border-radius: 50%; background: #e8c6a8; transition: transform .25s, background .25s; }
-  .loading-progress span.active { background: var(--loader-coral); transform: scale(1.35); }
+  .loading-progress span { width: 8px; height: 8px; border-radius: 50%; background: #e4d7f5; transition: transform .25s, background .25s; }
+  .loading-progress span.active { background: var(--loader-pink); transform: scale(1.35); }
   @keyframes steam { 0%,100% { transform: translateY(0) scaleX(1); opacity: .2; } 50% { transform: translateY(-14px) scaleX(1.3); opacity: .85; } }
   @keyframes float { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-13px) rotate(12deg); } }
   .error { border-left: 3px solid var(--saffron); padding: 6px 0 6px 18px; }
@@ -262,6 +263,8 @@ PAGE = r"""
     .loading-progress span { transition: none; }
   }
 
+  .recipe-reveal { animation: recipeReveal .65s cubic-bezier(.2,.75,.25,1) both; }
+  @keyframes recipeReveal { from { opacity: 0; transform: translateY(18px) scale(.985); filter: blur(4px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
   /* ---------- recipe ---------- */
   .title {
     font-family: var(--serif); font-weight: 500; font-size: clamp(2.2rem, 6vw, 3.6rem);
@@ -576,10 +579,10 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
           <div class="steam s1"></div>
           <div class="steam s2"></div>
           <div class="steam s3"></div>
-          <div class="ingredient i1"></div>
-          <div class="ingredient i2"></div>
-          <div class="ingredient i3"></div>
-          <div class="ingredient i4"></div>
+          <div class="ingredient i1">🍅</div>
+          <div class="ingredient i2">🌿</div>
+          <div class="ingredient i3">🧄</div>
+          <div class="ingredient i4">🍄</div>
           <div class="pot"></div>
         </div>
         <div class="loading-copy">
@@ -656,7 +659,7 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
       }
     });
 
-    const card = el("article", "recipe");
+    const card = el("article", "recipe recipe-reveal");
 
     const head = el("div", "recipe-head");
     head.appendChild(el("h2", "title", title));
