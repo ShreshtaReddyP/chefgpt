@@ -364,6 +364,7 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
 
 </style>
 </head>
+<script src="/photo-scan.js"></script>
 <body>
   <div class="page">
     <header class="top">
