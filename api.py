@@ -362,6 +362,15 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
   .stat { margin-right: 14px; padding-right: 14px; }
 }
 
+
+  /* Voice cooking controls */
+  .voice-cook { margin: 16px 0 18px; padding: 16px; background: #e9eee5; border: 1px solid #dce0d6; border-radius: 12px; }
+  .voice-cook p { margin: 0 0 10px; color: var(--muted); font-size: .9rem; }
+  .voice-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+  .voice-controls button { border: 1px solid #c5cabd; background: #fffefa; border-radius: 7px; padding: 9px 13px; cursor: pointer; }
+  .voice-controls button.primary { background: var(--green); color: #fff; border-color: var(--green); }
+  .voice-status { display: block; margin-top: 10px; font-size: .85rem; color: var(--green); }
+
 </style>
 </head>
 <body>
@@ -638,10 +647,86 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
       const right = el("div");
       right.appendChild(el("h3", "", "Method"));
       right.appendChild(el("p", "hint", "Tap a step to mark it done."));
+
+      // Hands-free voice cooking. Uses the browser's built-in speech synthesis.
+      const voiceBox = el("section", "voice-cook");
+      voiceBox.appendChild(el("strong", "", "Voice cooking"));
+      voiceBox.appendChild(el("p", "", "Listen to each instruction while you cook."));
+      const voiceControls = el("div", "voice-controls");
+      const startVoice = el("button", "primary", "▶ Read step");
+      const prevVoice = el("button", "", "← Previous");
+      const pauseVoice = el("button", "", "Ⅱ Pause");
+      const nextVoice = el("button", "", "Next →");
+      [startVoice, prevVoice, pauseVoice, nextVoice].forEach((b) => {
+        b.type = "button";
+        voiceControls.appendChild(b);
+      });
+      const voiceStatus = el("span", "voice-status", "Ready to start.");
+      voiceBox.appendChild(voiceControls);
+      voiceBox.appendChild(voiceStatus);
+      right.appendChild(voiceBox);
+
+      let activeVoiceStep = 0;
+      function stopSpeaking() {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      }
+      function speakVoiceStep() {
+        if (!("speechSynthesis" in window)) {
+          voiceStatus.textContent = "Voice playback isn't supported in this browser.";
+          return;
+        }
+        if (!steps.length) return;
+        stopSpeaking();
+        const spokenText = "Step " + (activeVoiceStep + 1) + ". " + steps[activeVoiceStep];
+        const utterance = new SpeechSynthesisUtterance(spokenText);
+        utterance.rate = 0.92;
+        utterance.onstart = () => {
+          voiceStatus.textContent = "Speaking step " + (activeVoiceStep + 1) + " of " + steps.length + ".";
+          startVoice.textContent = "▶ Read again";
+        };
+        utterance.onend = () => {
+          voiceStatus.textContent = "Finished step " + (activeVoiceStep + 1) + ". Say or tap Next when ready.";
+        };
+        utterance.onerror = () => {
+          voiceStatus.textContent = "Couldn't play this step. Try Read step again.";
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+      startVoice.addEventListener("click", speakVoiceStep);
+      prevVoice.addEventListener("click", () => {
+        activeVoiceStep = Math.max(0, activeVoiceStep - 1);
+        speakVoiceStep();
+      });
+      nextVoice.addEventListener("click", () => {
+        activeVoiceStep = Math.min(steps.length - 1, activeVoiceStep + 1);
+        speakVoiceStep();
+      });
+      pauseVoice.addEventListener("click", () => {
+        if (!("speechSynthesis" in window)) {
+          voiceStatus.textContent = "Voice playback isn't supported in this browser.";
+          return;
+        }
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+          pauseVoice.textContent = "Ⅱ Pause";
+          voiceStatus.textContent = "Resuming voice playback.";
+        } else if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.pause();
+          pauseVoice.textContent = "▶ Resume";
+          voiceStatus.textContent = "Paused.";
+        } else {
+          speakVoiceStep();
+        }
+      });
+
       const ol = el("ol", "steps");
-      steps.forEach((text) => {
+      steps.forEach((text, index) => {
         const li = el("li", "", text);
-        li.addEventListener("click", () => li.classList.toggle("done"));
+        li.addEventListener("click", () => {
+          li.classList.toggle("done");
+          activeVoiceStep = index;
+          voiceStatus.textContent = "Selected step " + (index + 1) + ". Tap Read step to hear it.";
+        });
         ol.appendChild(li);
       });
       right.appendChild(ol);
