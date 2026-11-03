@@ -120,7 +120,7 @@ def _scan(req: ScanRequest) -> ScanResult:
             raise HTTPException(status_code=422, detail="Add a photo or at least one ingredient.")
         contents.append(_prompt(constraints, False, items))
 
-       client = genai.Client(api_key=key)
+    client = genai.Client(api_key=key)
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=ScanResult,
@@ -153,7 +153,7 @@ def scan(body: ScanRequest):
         result = _scan(body)
     except HTTPException:
         raise
-        except Exception as e:  # network, quota, bad model output
+    except Exception as e:  # network, quota, bad model output
         text = str(e)
         if "503" in text or "UNAVAILABLE" in text or "429" in text:
             detail = "The AI is very busy right now. Please try again in a minute."
