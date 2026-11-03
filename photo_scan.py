@@ -12,6 +12,7 @@ so the normal pipeline (constraint parsing, recipe, audit, repair loop) runs on 
 import base64
 import binascii
 import os
+import time
 from typing import List, Literal, Optional
 
 from fastapi import APIRouter, HTTPException
@@ -21,6 +22,12 @@ from pydantic import BaseModel, Field
 router = APIRouter()
 
 MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+FALLBACK_MODELS = [
+    m.strip()
+    for m in os.environ.get("GEMINI_FALLBACK_MODELS", "gemini-3.1-flash-lite").split(",")
+    if m.strip()
+]
+RETRIES_PER_MODEL = 2
 ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_IMAGE_BYTES = 6 * 1024 * 1024
 
@@ -113,17 +120,31 @@ def _scan(req: ScanRequest) -> ScanResult:
             raise HTTPException(status_code=422, detail="Add a photo or at least one ingredient.")
         contents.append(_prompt(constraints, False, items))
 
-    client = genai.Client(api_key=key)
-    resp = client.models.generate_content(
-        model=MODEL,
-        contents=contents,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=ScanResult,
-            temperature=0.7,
-        ),
+       client = genai.Client(api_key=key)
+    config = types.GenerateContentConfig(
+        response_mime_type="application/json",
+        response_schema=ScanResult,
+        temperature=0.7,
     )
-    return ScanResult.model_validate_json(resp.text)
+
+    last_err: Exception = RuntimeError("No model available")
+    for model in [MODEL] + [m for m in FALLBACK_MODELS if m != MODEL]:
+        for attempt in range(RETRIES_PER_MODEL + 1):
+            try:
+                resp = client.models.generate_content(model=model, contents=contents, config=config)
+                return ScanResult.model_validate_json(resp.text)
+            except Exception as e:
+                last_err = e
+                text = str(e)
+                busy = any(c in text for c in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED"))
+                gone = "404" in text or "NOT_FOUND" in text
+                if gone:
+                    break
+                if not busy:
+                    raise
+                if attempt < RETRIES_PER_MODEL:
+                    time.sleep(1.5 * (attempt + 1))
+    raise last_err
 
 
 @router.post("/scan")
@@ -132,8 +153,13 @@ def scan(body: ScanRequest):
         result = _scan(body)
     except HTTPException:
         raise
-    except Exception as e:  # network, quota, bad model output
-        raise HTTPException(status_code=503, detail=str(e)[:200])
+        except Exception as e:  # network, quota, bad model output
+        text = str(e)
+        if "503" in text or "UNAVAILABLE" in text or "429" in text:
+            detail = "The AI is very busy right now. Please try again in a minute."
+        else:
+            detail = text[:200]
+        raise HTTPException(status_code=503, detail=detail)
     result.recipes = result.recipes[:4]
     return result
 
