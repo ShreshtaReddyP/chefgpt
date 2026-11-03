@@ -136,8 +136,8 @@ def photo(q: List[str] = Query(default=[])):
 PAGE = r"""
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="/photo-scan.css">
 <head>
+<link rel="stylesheet" href="/photo-scan.css">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f9f8f4">
@@ -364,7 +364,6 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
 
 </style>
 </head>
-<script src="/photo-scan.js"></script>
 <body>
   <div class="page">
     <header class="top">
@@ -745,6 +744,7 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
   });
   renderRecent();
 </script>
+<script src="/photo-scan.js"></script>
 </body>
 </html>
 """
