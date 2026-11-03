@@ -243,6 +243,34 @@ CSS = r"""
 .pk-cuisine { font: inherit; font-size: .92rem; flex: 1 1 14rem; max-width: 22rem; padding: 8px 12px; background: #fffefa; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); outline: none; }
 .pk-cuisine:focus { border-color: var(--saffron); }
 .pk-alt-title { font-family: var(--serif); font-weight: 500; font-size: 1.15rem; letter-spacing: -.02em; margin: 0 0 4px; }
+
+/* Compact, editorial ChefGPT polish */
+.pk { padding-bottom: 22px; margin-bottom: 22px; }
+.pk-title { font-size: clamp(1.2rem, 2.2vw, 1.55rem); line-height: 1.2; margin-bottom: 4px; }
+.pk-sub, .pk-msg, .pk-hint { font-size: .82rem; }
+.pk-sub { margin-bottom: 12px; }
+.pk-label { margin: 18px 0 8px; font-size: .78rem; letter-spacing: .025em; }
+.pk-drop { padding: 22px 16px; border-radius: 10px; }
+.pk-pick, .pk-pick.pk-primary, .pk .go { padding: 9px 15px; font-size: .88rem; border-radius: 7px; }
+.pk-thumb { width: 68px; height: 68px; border-radius: 8px; }
+.pk-diet { gap: 8px; margin-top: 12px; }
+.pk-diet-label { font-size: .82rem; }
+.pk-diet-input, .pk-cuisine { font-size: .86rem; padding: 8px 10px; }
+.pk-chips { gap: 7px; }
+.pk-chip { font-size: .83rem; padding: 5px 5px 5px 9px; border-radius: 6px; }
+.pk-grid { gap: 12px; }
+.pk-card { padding: 15px 16px; border-radius: 10px; gap: 7px; }
+.pk-card h4 { font-size: 1.12rem; line-height: 1.25; }
+.pk-facts { font-family: inherit; font-size: .82rem; gap: 12px; }
+.pk-why { font-family: inherit; font-size: .88rem; line-height: 1.5; }
+.pk-uses, .pk-need { font-size: .78rem; line-height: 1.45; }
+.pk-card .act { font-size: .84rem; padding: 8px 12px; border-radius: 7px; }
+.pk-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(41,21,46,.06); }
+.pk-card { transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .pk-card, .pk-card:hover { transition: none; transform: none; }
+}
+
 """
 
 JS = r"""
@@ -264,8 +292,8 @@ JS = r"""
 
   // ---------- photo panel first (main feature), dish-name form second ----------
   const box = el("div", "pk");
-  box.appendChild(el("h2", "pk-title", "Show me what's in your kitchen."));
-  box.appendChild(el("p", "pk-sub", "Upload a photo of your ingredients and I'll spot what you have and suggest a few recipes to choose from."));
+  box.appendChild(el("h2", "pk-title", "Your ingredients"));
+  box.appendChild(el("p", "pk-sub", "Scan ingredients"));
 
   const drop = el("div", "pk-drop");
   const row = el("div", "pk-row");
@@ -285,12 +313,12 @@ JS = r"""
   remove.type = "button";
   remove.hidden = true;
   row.append(file, pick, thumb, find, remove);
-  const hint = el("p", "pk-hint", "or drag and drop a JPG, PNG or WebP photo here");
+  const hint = el("p", "pk-hint", "JPG, PNG or WebP");
   drop.append(row, hint);
 
   // dietary needs for the photo flow (starts with whatever is in the dish-name form)
   const dietWrap = el("div", "pk-diet");
-  const dietLabel = el("label", "pk-diet-label", "Dietary needs (optional)");
+  const dietLabel = el("label", "pk-diet-label", "Dietary needs");
   dietLabel.setAttribute("for", "pk-diet");
   const diet = el("input", "pk-diet-input");
   diet.id = "pk-diet";
@@ -321,8 +349,8 @@ JS = r"""
 
   // The existing "I'd like to cook" form moves into a secondary section under the photo panel.
   const alt = el("div", "pk-alt");
-  alt.appendChild(el("h3", "pk-alt-title", "Or type a dish name"));
-  alt.appendChild(el("p", "pk-sub", "Already know what you want to cook? Enter a dish and any dietary needs."));
+  alt.appendChild(el("h3", "pk-alt-title", "Or enter a dish"));
+  alt.appendChild(el("p", "pk-sub", ""));
   Array.from(order.childNodes).forEach((n) => alt.appendChild(n));
   order.replaceChildren(box, alt);
 
@@ -415,7 +443,7 @@ JS = r"""
   function renderChips() {
     chipsBox.replaceChildren();
     if (!state.ingredients.length) return;
-    chipsBox.appendChild(el("p", "pk-label", "Here is what I found. Remove anything wrong or add what I missed."));
+    chipsBox.appendChild(el("p", "pk-label", "Ingredients found"));
     const wrap = el("div", "pk-chips");
     state.ingredients.forEach((name, i) => {
       const chip = el("span", "pk-chip", name);
@@ -447,7 +475,7 @@ JS = r"""
 
   function renderRecipes(list) {
     results.replaceChildren();
-    results.appendChild(el("p", "pk-label", "Pick one and I'll write the full recipe."));
+    results.appendChild(el("p", "pk-label", "Recipe ideas"));
     const grid = el("div", "pk-grid");
     list.forEach((r) => {
       const card = el("article", "pk-card");
