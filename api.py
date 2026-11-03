@@ -137,15 +137,16 @@ PAGE = r"""
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="stylesheet" href="/photo-scan.css">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f9f8f4">
+<meta name="theme-color" content="#f7f5ef">
 <title>ChefGPT</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%231e4637%22/><text x=%2232%22 y=%2246%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23f9f8f4%22 font-family=%22Georgia,serif%22>C</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/photo-scan.css">
+<style>
 /* =========================================================
    ChefGPT: single consolidated stylesheet
    ========================================================= */
@@ -261,7 +262,6 @@ button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent
   box-shadow: 0 8px 20px rgba(47, 94, 74, .25);
   transition: transform .2s var(--ease), box-shadow .2s var(--ease), background .2s;
 }
-html:not(.x) .go { color: #fff; }
 @media (prefers-color-scheme: dark) { .go { color: #0f1813; } }
 .go::after { /* shine sweep on hover */
   content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
@@ -287,7 +287,6 @@ html:not(.x) .go { color: #fff; }
 .chip:hover { transform: translateY(-2px); border-color: var(--green); box-shadow: var(--shadow-sm); }
 .chip:active { transform: scale(.94); }
 .recent-chip { color: var(--ink); background: var(--surface); animation: pop .4s var(--ease) both; }
-.chips .chip:nth-of-type(2) { animation-delay: .05s; }
 @keyframes pop { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
 
 /* ---------- loading and errors ---------- */
@@ -471,6 +470,7 @@ footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
 }
+</style>
 </head>
 <body>
   <div class="page">
