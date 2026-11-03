@@ -28,6 +28,8 @@ FALLBACK_MODELS = [
     if m.strip()
 ]
 RETRIES_PER_MODEL = 1
+# Per-call limit in milliseconds. Photo + 4 recipes is a heavy request, so 30s was too tight.
+TIMEOUT_MS = int(os.environ.get("GEMINI_TIMEOUT_MS", "60000"))
 ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_IMAGE_BYTES = 6 * 1024 * 1024
 
@@ -122,7 +124,7 @@ def _scan(req: ScanRequest) -> ScanResult:
 
     client = genai.Client(
         api_key=key,
-        http_options=types.HttpOptions(timeout=30000),  # 30 seconds
+        http_options=types.HttpOptions(timeout=TIMEOUT_MS),
     )
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
@@ -141,7 +143,8 @@ def _scan(req: ScanRequest) -> ScanResult:
                 text = str(e)
                 busy = any(c in text for c in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED"))
                 gone = "404" in text or "NOT_FOUND" in text
-                if gone:
+                timed_out = "timed out" in text.lower() or "timeout" in text.lower()
+                if gone or timed_out:  # move on to the next model instead of waiting again
                     break
                 if not busy:
                     raise
@@ -160,6 +163,8 @@ def scan(body: ScanRequest):
         text = str(e)
         if "503" in text or "UNAVAILABLE" in text or "429" in text:
             detail = "The AI is very busy right now. Please try again in a minute."
+        elif "timed out" in text.lower() or "timeout" in text.lower():
+            detail = "The AI took too long to respond. Please try again."
         else:
             detail = text[:200]
         raise HTTPException(status_code=503, detail=detail)
@@ -172,10 +177,10 @@ def scan(body: ScanRequest):
 # so the panel looks like part of ChefGPT.
 # ---------------------------------------------------------------------------
 CSS = r"""
-.pk { margin-top: 34px; padding-top: 26px; border-top: 1px solid var(--line); }
-.pk-title { font-family: var(--serif); font-size: clamp(1.15rem, 2.4vw, 1.45rem); letter-spacing: -.02em; margin: 0 0 4px; }
+.pk { padding-bottom: 28px; margin-bottom: 28px; border-bottom: 1px solid var(--line); }
+.pk-title { font-family: var(--serif); font-weight: 500; font-size: clamp(1.45rem, 3.4vw, 2rem); letter-spacing: -.02em; line-height: 1.15; margin: 0 0 6px; }
 .pk-sub { margin: 0 0 16px; color: var(--muted); font-size: .92rem; }
-.pk-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.pk-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
 .pk-file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .pk-pick { display: inline-block; cursor: pointer; background: #fffefa; border: 1px solid var(--line); border-radius: 8px; padding: 12px 18px; font-weight: 600; }
 .pk-pick:hover { background: #e0e9dc; border-color: #c4d2c0; }
@@ -204,6 +209,18 @@ CSS = r"""
 .pk-card .act { margin-top: auto; align-self: flex-start; }
 .pk-card { transition: border-color .15s; }
 .pk-card:hover { border-color: #c4d2c0; }
+.pk-drop { border: 2px dashed #b9c9b6; border-radius: 14px; background: #f4f7ef; padding: 28px 18px; text-align: center; transition: border-color .15s, background .15s; }
+.pk-drop.over { border-color: var(--saffron); background: #fbf3e6; }
+.pk-hint { margin: 12px 0 0; color: var(--muted); font-size: .86rem; }
+.pk-pick.pk-primary { background: var(--green, #2d5a46); border-color: var(--green, #2d5a46); color: #fff; padding: 14px 28px; font-size: 1.02rem; }
+.pk-pick.pk-primary:hover { background: var(--green, #2d5a46); border-color: var(--green, #2d5a46); filter: brightness(1.15); }
+.pk-remove { border: 0; background: none; cursor: pointer; color: var(--muted); font: inherit; font-size: .9rem; text-decoration: underline; padding: 6px; }
+.pk-remove:hover { color: var(--ink); }
+.pk-diet { margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.pk-diet-label { font-size: .9rem; color: var(--muted); }
+.pk-diet-input { font: inherit; font-size: .92rem; flex: 1 1 14rem; max-width: 22rem; padding: 8px 12px; background: #fffefa; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); outline: none; }
+.pk-diet-input:focus { border-color: var(--saffron); }
+.pk-alt-title { font-family: var(--serif); font-weight: 500; font-size: 1.15rem; letter-spacing: -.02em; margin: 0 0 4px; }
 """
 
 JS = r"""
@@ -223,17 +240,18 @@ JS = r"""
 
   const state = { b64: null, ingredients: [], busy: false };
 
-  // ---------- build the panel inside the existing order card ----------
+  // ---------- photo panel first (main feature), dish-name form second ----------
   const box = el("div", "pk");
-  box.appendChild(el("h3", "pk-title", "Not sure what to cook? Show me your ingredients."));
-  box.appendChild(el("p", "pk-sub", "Upload a photo and I'll spot what you have and suggest a few recipes to choose from."));
+  box.appendChild(el("h2", "pk-title", "Show me what's in your kitchen."));
+  box.appendChild(el("p", "pk-sub", "Upload a photo of your ingredients and I'll spot what you have and suggest a few recipes to choose from."));
 
+  const drop = el("div", "pk-drop");
   const row = el("div", "pk-row");
   const file = el("input", "pk-file");
   file.type = "file";
   file.id = "pk-file";
   file.accept = "image/jpeg,image/png,image/webp,image/*";
-  const pick = el("label", "pk-pick", "Upload a photo");
+  const pick = el("label", "pk-pick pk-primary", "Upload a photo");
   pick.setAttribute("for", "pk-file");
   const thumb = el("img", "pk-thumb");
   thumb.alt = "Your ingredients";
@@ -241,13 +259,42 @@ JS = r"""
   const find = el("button", "go", "Find recipes");
   find.type = "button";
   find.hidden = true;
-  row.append(file, pick, thumb, find);
+  const remove = el("button", "pk-remove", "Remove");
+  remove.type = "button";
+  remove.hidden = true;
+  row.append(file, pick, thumb, find, remove);
+  const hint = el("p", "pk-hint", "or drag and drop a JPG, PNG or WebP photo here");
+  drop.append(row, hint);
+
+  // dietary needs for the photo flow (starts with whatever is in the dish-name form)
+  const dietWrap = el("div", "pk-diet");
+  const dietLabel = el("label", "pk-diet-label", "Dietary needs (optional)");
+  dietLabel.setAttribute("for", "pk-diet");
+  const diet = el("input", "pk-diet-input");
+  diet.id = "pk-diet";
+  diet.placeholder = "e.g. vegetarian, no nuts";
+  diet.value = cons ? cons.value : "";
+  dietWrap.append(dietLabel, diet);
+  function dietText() { return diet.value.trim() || (cons ? cons.value : ""); }
 
   const msg = el("p", "pk-msg");
   const chipsBox = el("div");
   const results = el("div");
-  box.append(row, msg, chipsBox, results);
-  order.appendChild(box);
+  box.append(drop, dietWrap, msg, chipsBox, results);
+
+  // The existing "I'd like to cook" form moves into a secondary section under the photo panel.
+  const alt = el("div", "pk-alt");
+  alt.appendChild(el("h3", "pk-alt-title", "Or type a dish name"));
+  alt.appendChild(el("p", "pk-sub", "Already know what you want to cook? Enter a dish and any dietary needs."));
+  Array.from(order.childNodes).forEach((n) => alt.appendChild(n));
+  order.replaceChildren(box, alt);
+
+  // Best-effort: update the headline above the card to match the new main feature.
+  document.querySelectorAll("h1, h2, p").forEach((n) => {
+    if (!box.contains(n) && n.children.length === 0 && /craving/i.test(n.textContent)) {
+      n.textContent = "Show me your ingredients. I'll tell you what to cook.";
+    }
+  });
 
   function say(text, isError) {
     msg.textContent = text || "";
@@ -273,22 +320,58 @@ JS = r"""
     });
   }
 
-  file.addEventListener("change", async () => {
-    const f = file.files && file.files[0];
+  async function handleFile(f) {
     if (!f) return;
+    if (!/^image\//.test(f.type)) {
+      say("Please upload a JPG, PNG or WebP photo.", true);
+      return;
+    }
     try {
       const dataUrl = await shrink(f, 1024);
       state.b64 = dataUrl.split(",")[1];
       thumb.src = dataUrl;
       thumb.hidden = false;
       find.hidden = false;
+      remove.hidden = false;
+      hint.hidden = true;
       pick.textContent = "Change photo";
+      pick.classList.remove("pk-primary");
       chipsBox.replaceChildren();
       results.replaceChildren();
       say("");
     } catch (e) {
       say(e.message, true);
     }
+  }
+
+  file.addEventListener("change", () => handleFile(file.files && file.files[0]));
+
+  remove.addEventListener("click", () => {
+    state.b64 = null;
+    state.ingredients = [];
+    file.value = "";
+    thumb.hidden = true;
+    thumb.removeAttribute("src");
+    find.hidden = true;
+    remove.hidden = true;
+    hint.hidden = false;
+    pick.textContent = "Upload a photo";
+    pick.classList.add("pk-primary");
+    chipsBox.replaceChildren();
+    results.replaceChildren();
+    say("");
+  });
+
+  // drag and drop onto the dashed area
+  ["dragenter", "dragover"].forEach((t) =>
+    drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); })
+  );
+  ["dragleave", "drop"].forEach((t) =>
+    drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); })
+  );
+  drop.addEventListener("drop", (e) => {
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleFile(f);
   });
 
   // ---------- render ----------
@@ -342,7 +425,12 @@ JS = r"""
       const choose = el("button", "act", "Get this recipe");
       choose.type = "button";
       // Hand the choice to the existing ChefGPT flow
-      choose.addEventListener("click", () => { food.value = r.name; goBtn.click(); });
+      choose.addEventListener("click", () => {
+        if (cons && diet.value.trim()) cons.value = diet.value.trim();
+        food.value = r.name;
+        goBtn.click();
+        food.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
       card.appendChild(choose);
       grid.appendChild(card);
     });
@@ -365,7 +453,7 @@ JS = r"""
     say("");
     waiting(fromPhoto ? "Looking at your photo\u2026" : "Updating the ideas\u2026");
     try {
-      const body = { constraints: cons ? cons.value : "" };
+      const body = { constraints: dietText() };
       if (fromPhoto) body.image_base64 = state.b64; else body.ingredients = state.ingredients;
       const res = await fetch("/scan", {
         method: "POST",
