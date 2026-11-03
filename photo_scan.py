@@ -27,7 +27,7 @@ MODEL = os.environ.get(
 )
 FALLBACK_MODELS = [
     m.strip()
-    for m in os.environ.get("GEMINI_FALLBACK_MODELS", "gemini-3.1-flash-lite").split(",")
+    for m in os.environ.get("GEMINI_FALLBACK_MODELS", "gemini-2.5-flash").split(",")
     if m.strip()
 ]
 RETRIES_PER_MODEL = 1
@@ -153,7 +153,11 @@ def _scan(req: ScanRequest) -> ScanResult:
                 text = str(e)
                 busy = any(c in text for c in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED"))
                 gone = "404" in text or "NOT_FOUND" in text
-                timed_out = "timed out" in text.lower() or "timeout" in text.lower()
+                timed_out = (
+                    "timed out" in text.lower()
+                    or "timeout" in text.lower()
+                    or "deadline_exceeded" in text.lower()
+                )
                 if gone or timed_out:  # move on to the next model instead of waiting again
                     break
                 if not busy:
@@ -171,12 +175,18 @@ def scan(body: ScanRequest):
         raise
     except Exception as e:  # network, quota, bad model output
         text = str(e)
-        if "503" in text or "UNAVAILABLE" in text or "429" in text:
-            detail = "The AI is very busy right now. Please try again in a minute."
-        elif "timed out" in text.lower() or "timeout" in text.lower():
-            detail = "The AI took too long to respond. Please try again."
+        # Log the underlying Gemini error in Render so the generic UI message
+        # does not hide whether this is overload, quota, timeout, or another issue.
+        print(f"[PHOTO SCAN GEMINI ERROR] {type(e).__name__}: {text}", flush=True)
+        lowered = text.lower()
+        if "429" in text or "resource_exhausted" in lowered:
+            detail = "Gemini API quota or rate limit reached. Check your Google AI Studio quota and try again later."
+        elif "503" in text or "unavailable" in lowered:
+            detail = "Gemini is temporarily unavailable or overloaded. Please try again shortly."
+        elif "timed out" in lowered or "timeout" in lowered or "deadline_exceeded" in lowered:
+            detail = "Gemini took too long to respond. Please try again with a smaller photo."
         else:
-            detail = text[:200]
+            detail = text[:300] or "The scan failed. Please try again."
         raise HTTPException(status_code=503, detail=detail)
     result.recipes = result.recipes[:3]
     return result
