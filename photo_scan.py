@@ -21,14 +21,17 @@ from pydantic import BaseModel, Field
 
 router = APIRouter()
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+MODEL = os.environ.get(
+    "CHEFGPT_MODEL",
+    os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite"),
+)
 FALLBACK_MODELS = [
     m.strip()
     for m in os.environ.get("GEMINI_FALLBACK_MODELS", "gemini-3.1-flash-lite").split(",")
     if m.strip()
 ]
 RETRIES_PER_MODEL = 1
-# Per-call limit in milliseconds. Photo + 4 recipes is a heavy request, so 30s was too tight.
+# Per-call limit in milliseconds. Photo + recipe suggestions is a heavy request, so 30s was too tight.
 TIMEOUT_MS = int(os.environ.get("GEMINI_TIMEOUT_MS", "60000"))
 ALLOWED_MIME = {"image/jpeg", "image/png", "image/webp"}
 MAX_IMAGE_BYTES = 6 * 1024 * 1024
@@ -42,6 +45,7 @@ class ScanRequest(BaseModel):
     mime_type: str = "image/jpeg"
     ingredients: List[str] = Field(default_factory=list)  # refresh without a photo
     constraints: str = ""
+    cuisine: str = "Any Cuisine"
 
 
 class RecipeIdea(BaseModel):
@@ -62,7 +66,7 @@ class ScanResult(BaseModel):
 # ---------------------------------------------------------------------------
 # Gemini call (same google-genai library and GEMINI_API_KEY as the rest of the app)
 # ---------------------------------------------------------------------------
-def _prompt(constraints: str, from_photo: bool, ingredients: List[str]) -> str:
+def _prompt(constraints: str, cuisine: str, from_photo: bool, ingredients: List[str]) -> str:
     diet = (
         f"Dietary needs: {constraints}. Never suggest a dish or ingredient that breaks these."
         if constraints
@@ -78,12 +82,18 @@ def _prompt(constraints: str, from_photo: bool, ingredients: List[str]) -> str:
             "The user's ingredients are: " + ", ".join(ingredients) + ". "
             'Return exactly this list as "ingredients".'
         )
+    cuisine_text = (
+        f"Preferred cuisine: {cuisine}. Respect this cuisine as closely as possible."
+        if cuisine and cuisine.strip().lower() != "any cuisine"
+        else "Any cuisine is acceptable; choose practical variety."
+    )
     return "\n".join(
         [
             "You are the pantry scanner for ChefGPT, a recipe app.",
             source,
-            "Then suggest 4 clearly different recipes (different cuisine or style) that mostly use "
-            "those ingredients, assuming only basic staples (salt, oil, water, common spices) are on hand.",
+            cuisine_text,
+            "Then suggest exactly 3 clearly different recipes that mostly use those ingredients, "
+            "assuming only basic staples (salt, oil, water, common spices) are on hand.",
             '"name" must be a plain dish name that works as a recipe request, like "Tomato egg curry".',
             '"uses" lists which of the identified ingredients the dish uses.',
             '"missing" lists extra non-staple items needed. Keep it short, ideally empty.',
@@ -115,12 +125,12 @@ def _scan(req: ScanRequest) -> ScanResult:
         if len(raw) > MAX_IMAGE_BYTES:
             raise HTTPException(status_code=413, detail="That photo is too large. Try a smaller one.")
         contents.append(types.Part.from_bytes(data=raw, mime_type=req.mime_type))
-        contents.append(_prompt(constraints, True, []))
+        contents.append(_prompt(constraints, req.cuisine, True, []))
     else:
         items = [" ".join(i.split())[:60] for i in req.ingredients if i.strip()][:30]
         if not items:
             raise HTTPException(status_code=422, detail="Add a photo or at least one ingredient.")
-        contents.append(_prompt(constraints, False, items))
+        contents.append(_prompt(constraints, req.cuisine, False, items))
 
     client = genai.Client(
         api_key=key,
@@ -168,7 +178,7 @@ def scan(body: ScanRequest):
         else:
             detail = text[:200]
         raise HTTPException(status_code=503, detail=detail)
-    result.recipes = result.recipes[:4]
+    result.recipes = result.recipes[:3]
     return result
 
 
@@ -220,6 +230,8 @@ CSS = r"""
 .pk-diet-label { font-size: .9rem; color: var(--muted); }
 .pk-diet-input { font: inherit; font-size: .92rem; flex: 1 1 14rem; max-width: 22rem; padding: 8px 12px; background: #fffefa; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); outline: none; }
 .pk-diet-input:focus { border-color: var(--saffron); }
+.pk-cuisine { font: inherit; font-size: .92rem; flex: 1 1 14rem; max-width: 22rem; padding: 8px 12px; background: #fffefa; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); outline: none; }
+.pk-cuisine:focus { border-color: var(--saffron); }
 .pk-alt-title { font-family: var(--serif); font-weight: 500; font-size: 1.15rem; letter-spacing: -.02em; margin: 0 0 4px; }
 """
 
@@ -277,10 +289,25 @@ JS = r"""
   dietWrap.append(dietLabel, diet);
   function dietText() { return diet.value.trim() || (cons ? cons.value : ""); }
 
+  const cuisineWrap = el("div", "pk-diet");
+  const cuisineLabel = el("label", "pk-diet-label", "Cuisine");
+  cuisineLabel.setAttribute("for", "pk-cuisine");
+  const cuisine = el("select", "pk-cuisine");
+  cuisine.id = "pk-cuisine";
+  [
+    "Any Cuisine", "Indian", "Italian", "Chinese", "Japanese", "Korean",
+    "Mexican", "Thai", "Mediterranean", "American", "Continental"
+  ].forEach((name) => {
+    const option = el("option", "", name);
+    option.value = name;
+    cuisine.appendChild(option);
+  });
+  cuisineWrap.append(cuisineLabel, cuisine);
+
   const msg = el("p", "pk-msg");
   const chipsBox = el("div");
   const results = el("div");
-  box.append(drop, dietWrap, msg, chipsBox, results);
+  box.append(drop, dietWrap, cuisineWrap, msg, chipsBox, results);
 
   // The existing "I'd like to cook" form moves into a secondary section under the photo panel.
   const alt = el("div", "pk-alt");
@@ -453,7 +480,7 @@ JS = r"""
     say("");
     waiting(fromPhoto ? "Looking at your photo\u2026" : "Updating the ideas\u2026");
     try {
-      const body = { constraints: dietText() };
+      const body = { constraints: dietText(), cuisine: cuisine.value };
       if (fromPhoto) body.image_base64 = state.b64; else body.ingredients = state.ingredients;
       const res = await fetch("/scan", {
         method: "POST",
