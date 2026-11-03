@@ -5,6 +5,7 @@ import time
 import urllib.parse
 import urllib.request
 from typing import List
+from photo_scan import router as photo_router
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.encoders import jsonable_encoder
