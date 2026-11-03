@@ -139,187 +139,225 @@ PAGE = r"""
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f7f5ef">
+<meta name="theme-color" content="#f2f5ee">
 <title>ChefGPT</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%231e4637%22/><text x=%2232%22 y=%2246%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22%23f9f8f4%22 font-family=%22Georgia,serif%22>C</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/photo-scan.css">
 <style>
 /* =========================================================
-   ChefGPT: single consolidated stylesheet
+   ChefGPT: redesigned stylesheet
+   Idea: a herb-garden kitchen. Deep basil green for trust and
+   action, saffron yellow for warmth and highlights, chili red
+   only for problems. Fraunces (soft, characterful serif) for
+   dishes and headlines, Hanken Grotesk (clean sans) for
+   everything you actually need to read while cooking.
    ========================================================= */
+
+/* ---------- 1. Design tokens (colours, fonts, sizes) ---------- */
 :root {
-  --bg: #f7f5ef;
-  --surface: #ffffff;
-  --surface-2: #eef3ea;
-  --ink: #1f2b25;
-  --muted: #6f776c;
-  --line: #e0e3d9;
-  --green: #2f5e4a;
-  --green-dark: #224637;
-  --accent: #e28a55;
-  --accent-soft: #fff3e8;
-  --warm: #fff3df;
-  --shadow: 0 18px 50px rgba(31, 43, 37, .08);
-  --shadow-sm: 0 6px 18px rgba(31, 43, 37, .08);
-  --radius: 20px;
+  color-scheme: light dark;            /* tells the browser to draw its own controls in the matching theme */
+  --bg: #f2f5ee;
+  --surface: #fcfdf9;
+  --surface-2: #e8efe2;
+  --field: #ffffff;                    /* background of text boxes */
+  --ink: #14241b;                      /* main text */
+  --muted: #55645a;                    /* secondary text (still passes contrast) */
+  --line: #d2dcc8;
+  --green: #1f5a40;
+  --green-dark: #143d2c;
+  --on-green: #ffffff;                 /* text that sits on a green button */
+  --accent: #eaa51a;                   /* saffron */
+  --accent-soft: #fff3d1;
+  --warm: #fff3d1;
+  --chili: #c24a2b;
+  --shadow: 0 30px 60px -34px rgba(20, 36, 27, .45);
+  --shadow-sm: 0 10px 22px -14px rgba(20, 36, 27, .5);
+  --radius: 18px;
   --ease: cubic-bezier(.22, 1, .36, 1);
-  --serif: "Newsreader", Georgia, "Times New Roman", serif;
-  --sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* Automatic dark mode (follows the device setting) */
+/* Automatic dark mode (follows the device setting). Every colour pair below is chosen
+   so that text stays easy to read on its background. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121a16;
-    --surface: #1a251f;
-    --surface-2: #1f2d26;
-    --ink: #eaf0e8;
-    --muted: #9aa69c;
-    --line: #2d3b33;
-    --green: #7fc29f;
-    --green-dark: #98d3b3;
-    --accent: #f0a070;
-    --accent-soft: #2b221c;
-    --warm: #2b2619;
-    --shadow: 0 18px 50px rgba(0, 0, 0, .35);
-    --shadow-sm: 0 6px 18px rgba(0, 0, 0, .3);
+    --bg: #0e1712;
+    --surface: #15211a;
+    --surface-2: #1d2c23;
+    --field: #101b15;
+    --ink: #eef3ea;
+    --muted: #a6b5aa;
+    --line: #2d4036;
+    --green: #8fd1a9;
+    --green-dark: #aee3c4;
+    --on-green: #0c1610;
+    --accent: #f2b84b;
+    --accent-soft: #2b2515;
+    --warm: #2b2515;
+    --chili: #ef8a6c;
+    --shadow: 0 30px 60px -30px rgba(0, 0, 0, .7);
+    --shadow-sm: 0 10px 22px -12px rgba(0, 0, 0, .7);
   }
 }
 
+/* ---------- 2. Base ---------- */
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  margin: 0; color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.55;
-  -webkit-font-smoothing: antialiased; background: var(--bg); position: relative; overflow-x: hidden;
+  margin: 0; color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden; min-height: 100vh;
+  background-color: var(--bg);
+  /* two soft pools of colour, fixed in place so the page feels calm */
+  background-image:
+    radial-gradient(48rem 26rem at 90% -8%, rgba(234, 165, 26, .16), transparent 65%),
+    radial-gradient(44rem 28rem at -8% 6%, rgba(47, 120, 84, .16), transparent 65%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
-/* Slowly drifting colour glow behind the page */
-body::before, body::after {
-  content: ""; position: fixed; z-index: -1; width: 46rem; height: 46rem; border-radius: 50%;
-  filter: blur(70px); opacity: .5; pointer-events: none;
-}
-body::before { top: -14rem; left: -12rem; background: radial-gradient(circle, rgba(226,138,85,.35), transparent 65%); animation: drift1 22s ease-in-out infinite alternate; }
-body::after  { bottom: -16rem; right: -12rem; background: radial-gradient(circle, rgba(110,170,130,.35), transparent 65%); animation: drift2 26s ease-in-out infinite alternate; }
-@keyframes drift1 { to { transform: translate(8rem, 6rem) scale(1.15); } }
-@keyframes drift2 { to { transform: translate(-7rem, -5rem) scale(1.1); } }
-
 button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-::selection { background: var(--accent); color: #fff; }
+input, select, textarea { font-family: var(--sans); }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+::selection { background: var(--accent); color: #14241b; }
 
-.page { max-width: 1040px; margin: 0 auto; padding: 0 28px 64px; }
+.page { max-width: 1040px; margin: 0 auto; padding: 0 28px 72px; }
 
-/* ---------- masthead ---------- */
+/* ---------- 3. Masthead ---------- */
 .top {
   display: flex; justify-content: space-between; align-items: center; gap: 16px;
-  padding: 24px 0 18px; border-bottom: 1px solid var(--line);
+  padding: 26px 0 20px;
   animation: fadeDown .7s var(--ease) both;
 }
 .logo {
-  font-family: var(--serif); font-size: 2rem; font-weight: 500; letter-spacing: -.05em; color: var(--green);
-  display: inline-flex; align-items: baseline; gap: 4px;
+  font-family: var(--serif); font-size: 2.05rem; font-weight: 600; letter-spacing: -.04em; color: var(--green);
+  display: inline-flex; align-items: baseline; gap: 5px; line-height: 1;
 }
 .logo::after {
-  content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--accent);
-  animation: pulse 2.4s ease-in-out infinite;
+  content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+  animation: pulse 2.6s ease-in-out infinite;
 }
-@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: .55; } }
-.top p { margin: 0; color: var(--muted); font-size: .9rem; text-align: right; }
+@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: .6; } }
+.top p { margin: 0; color: var(--muted); font-size: .95rem; text-align: right; }
 @media (max-width: 640px) { .top p { display: none; } }
 
-/* ---------- the order card ---------- */
+/* ---------- 4. The order card (where you type) ---------- */
 .order {
-  margin-top: 30px; padding: clamp(26px, 5vw, 54px);
-  background: var(--surface); border: 1px solid var(--line); border-radius: 24px;
-  box-shadow: var(--shadow); animation: fadeUp .8s .1s var(--ease) both;
-  transition: box-shadow .3s var(--ease), transform .3s var(--ease);
+  margin-top: 8px; padding: clamp(24px, 5vw, 52px);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 28px;
+  box-shadow: var(--shadow); position: relative;
+  animation: fadeUp .8s .1s var(--ease) both;
+  transition: border-color .3s var(--ease);
 }
-.order:focus-within { box-shadow: 0 24px 64px rgba(47, 94, 74, .16); transform: translateY(-2px); }
-.sentence {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin: 0 0 20px;
-  font-family: var(--serif); font-size: clamp(2rem, 4.7vw, 3.8rem); line-height: 1.1; letter-spacing: -.045em;
-}
-.sentence.small { font-size: clamp(1rem, 2vw, 1.25rem); color: var(--muted); letter-spacing: 0; margin: 0; }
-.lead { font: inherit; color: inherit; }
-.blank {
-  flex: 1; min-width: 12ch; font: inherit; letter-spacing: inherit; color: var(--green);
-  background: transparent; border: 0; border-radius: 0; padding: 0 4px 7px; outline: none;
-  border-bottom: 2px solid var(--line);
-  background-image: linear-gradient(var(--accent), var(--accent));
-  background-repeat: no-repeat; background-position: left bottom; background-size: 0% 2px;
-  transition: background-size .45s var(--ease);
-}
-.blank::placeholder { color: var(--muted); opacity: .5; }
-.blank:focus, .blank:focus-visible { outline: none; background-size: 100% 2px; }
-.sentence.small .blank { color: var(--ink); border-bottom-width: 1px; }
+.order:focus-within { border-color: var(--green); }
 
-.row { margin-top: 28px; }
+.sentence {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 0 0 22px;
+  font-family: var(--serif); font-weight: 500;
+  font-size: clamp(1.9rem, 4.2vw, 3.1rem); line-height: 1.12; letter-spacing: -.03em;
+}
+.lead { font: inherit; color: var(--ink); }
+
+/* the big "I'd like to cook ____" line */
+.blank {
+  flex: 1 1 14ch; min-width: 0; font: inherit; letter-spacing: inherit; font-weight: 600; color: var(--green);
+  background-color: transparent; border: 0; border-radius: 0; padding: 0 2px 8px; outline: none;
+  border-bottom: 2px solid var(--line);
+  text-overflow: ellipsis;
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat; background-position: left bottom; background-size: 0% 3px;
+  transition: background-size .5s var(--ease);
+}
+.blank::placeholder { color: var(--muted); opacity: .55; font-weight: 500; }
+.blank:focus, .blank:focus-visible { outline: none; background-size: 100% 3px; }
+
+/* the smaller "Dietary needs" row: a proper boxed input so text is always readable */
+.sentence.small {
+  align-items: center; gap: 10px 14px; margin: 0;
+  font-family: var(--sans); font-weight: 500; font-size: 1rem; letter-spacing: 0; color: var(--muted);
+}
+.sentence.small .lead { flex: none; color: var(--muted); font-weight: 600; font-size: .95rem; }
+.sentence.small .blank {
+  flex: 1 1 260px; font-weight: 500; font-size: 1rem; color: var(--ink);
+  background-color: var(--field); background-image: none;
+  border: 1.5px solid var(--line); border-radius: 12px; padding: 13px 16px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.sentence.small .blank::placeholder { opacity: .8; }
+.sentence.small .blank:focus, .sentence.small .blank:focus-visible {
+  border-color: var(--green); box-shadow: 0 0 0 4px rgba(234, 165, 26, .25);
+}
+
+.row { margin-top: 26px; }
 .go {
-  position: relative; overflow: hidden; background: var(--green); color: #fff; border: 0;
-  padding: 14px 30px; border-radius: 999px; font-weight: 600; font-size: 1rem; cursor: pointer;
-  box-shadow: 0 8px 20px rgba(47, 94, 74, .25);
+  position: relative; overflow: hidden; background: var(--green); color: var(--on-green); border: 0;
+  padding: 15px 34px; border-radius: 999px; font-weight: 700; font-size: 1.02rem; cursor: pointer;
+  box-shadow: 0 12px 24px -12px var(--green);
   transition: transform .2s var(--ease), box-shadow .2s var(--ease), background .2s;
 }
-@media (prefers-color-scheme: dark) { .go { color: #0f1813; } }
-.go::after { /* shine sweep on hover */
+.go::after { /* a quick shine that sweeps across on hover */
   content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
-  background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .35), transparent);
   transform: skewX(-20deg); transition: left .6s var(--ease);
 }
-.go:hover { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 12px 26px rgba(47, 94, 74, .3); }
+.go:hover { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 16px 28px -12px var(--green); }
 .go:hover::after { left: 130%; }
 .go:active { transform: translateY(0) scale(.97); }
-.go:disabled { opacity: .75; cursor: wait; transform: none; animation: breathe 1.4s ease-in-out infinite; }
-@keyframes breathe { 50% { opacity: .5; } }
+.go:disabled { opacity: .8; cursor: wait; transform: none; animation: breathe 1.4s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: .55; } }
 @media (max-width: 640px) { .go { width: 100%; } }
 
-/* ---------- chips ---------- */
+/* ---------- 5. Suggestion chips ---------- */
 .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 22px; font-size: .92rem; }
 .chips[hidden] { display: none; }
-.chip-label { color: var(--muted); margin-right: 4px; }
+.chip-label { color: var(--muted); margin-right: 4px; font-weight: 500; }
 .chip {
-  padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2);
-  color: var(--green); cursor: pointer;
-  transition: transform .2s var(--ease), background .2s, border-color .2s, box-shadow .2s;
+  padding: 8px 15px; border: 1.5px solid var(--line); border-radius: 999px; background: transparent;
+  color: var(--ink); font-weight: 500; cursor: pointer;
+  transition: transform .2s var(--ease), background .2s, border-color .2s, color .2s;
 }
-.chip:hover { transform: translateY(-2px); border-color: var(--green); box-shadow: var(--shadow-sm); }
+.chip:hover { transform: translateY(-2px); border-color: var(--green); background: var(--surface-2); color: var(--green); }
 .chip:active { transform: scale(.94); }
-.recent-chip { color: var(--ink); background: var(--surface); animation: pop .4s var(--ease) both; }
-@keyframes pop { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+.recent-chip {
+  background: var(--surface-2); border-color: transparent;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  animation: pop .4s var(--ease) both;
+}
+@keyframes pop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
 
-/* ---------- loading and errors ---------- */
-#out { margin-top: 46px; }
+/* ---------- 6. Loading and errors ---------- */
+#out { margin-top: 48px; }
 .loading { padding: 20px 0 44px; color: var(--muted); animation: fadeUp .4s var(--ease) both; }
-.bar { position: relative; height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; margin-bottom: 22px; }
+.bar { position: relative; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; margin-bottom: 24px; }
 .bar::after {
   content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 28%; border-radius: 999px;
   background: linear-gradient(90deg, var(--green), var(--accent));
   animation: slide 1.3s cubic-bezier(.4, 0, .2, 1) infinite;
 }
 @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(360%); } }
-#loadmsg { font-family: var(--serif); font-style: italic; font-size: clamp(1.4rem, 3vw, 1.9rem); color: var(--green); animation: msg .6s var(--ease); }
+#loadmsg { font-family: var(--serif); font-style: italic; font-size: clamp(1.5rem, 3vw, 2rem); color: var(--green); animation: msg .6s var(--ease); }
 @keyframes msg { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.loading small { display: block; margin-top: 6px; font-size: .88rem; }
+.loading small { display: block; margin-top: 8px; font-size: .92rem; }
 
 .error {
-  padding: 20px 22px; background: var(--surface); border: 1px solid var(--line);
-  border-left: 4px solid var(--accent); border-radius: 12px; animation: shake .5s var(--ease);
+  padding: 20px 22px; background: var(--surface); border: 1px solid var(--line); color: var(--ink);
+  border-left: 5px solid var(--chili); border-radius: 12px; animation: shake .5s var(--ease);
 }
 pre.error { white-space: pre-wrap; overflow-x: auto; font-size: .85rem; }
 .error strong { display: block; font-weight: 600; }
-.error .detail { margin: 6px 0 0; color: var(--muted); font-size: .88rem; word-break: break-word; }
+.error .detail { margin: 8px 0 0; color: var(--muted); font-size: .9rem; word-break: break-word; }
 @keyframes shake { 0%, 100% { transform: none; } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(2px); } }
 .ghost {
-  margin-top: 14px; background: var(--green); color: #fff; border: 0; padding: 9px 18px; border-radius: 999px;
-  font-weight: 500; cursor: pointer; transition: transform .2s var(--ease), background .2s;
+  margin-top: 14px; background: var(--green); color: var(--on-green); border: 0; padding: 10px 20px; border-radius: 999px;
+  font-weight: 600; cursor: pointer; transition: transform .2s var(--ease), background .2s;
 }
-@media (prefers-color-scheme: dark) { .ghost { color: #0f1813; } }
 .ghost:hover { background: var(--green-dark); transform: translateY(-1px); }
 .ghost:active { transform: scale(.96); }
 
-/* ---------- recipe: staggered entrance ---------- */
+/* ---------- 7. The recipe ---------- */
 .recipe > * { animation: fadeUp .7s var(--ease) both; }
 .recipe > :nth-child(1) { animation-delay: .00s; }
 .recipe > :nth-child(2) { animation-delay: .08s; }
@@ -329,143 +367,180 @@ pre.error { white-space: pre-wrap; overflow-x: auto; font-size: .85rem; }
 .recipe > :nth-child(6) { animation-delay: .40s; }
 .recipe > :nth-child(n+7) { animation-delay: .48s; }
 
-.title { font-family: var(--serif); font-weight: 500; font-size: clamp(2.4rem, 5.4vw, 4.4rem); line-height: 1.04; letter-spacing: -.055em; margin: 0 0 12px; }
-.desc { font-family: var(--serif); font-size: 1.22rem; line-height: 1.5; color: var(--muted); max-width: 60ch; margin: 0; }
+.title {
+  font-family: var(--serif); font-weight: 600; font-size: clamp(2.3rem, 5.4vw, 4.2rem); line-height: 1.04;
+  letter-spacing: -.045em; margin: 0 0 14px; text-wrap: balance;
+}
+.desc { font-family: var(--serif); font-size: 1.2rem; line-height: 1.6; color: var(--muted); max-width: 62ch; margin: 0; }
 
 .photo-wrap {
-  display: none; position: relative; margin-top: 28px; height: clamp(220px, 45vw, 420px);
-  background: var(--surface-2); overflow: hidden; border-radius: var(--radius); box-shadow: var(--shadow);
+  display: none; position: relative; margin-top: 30px; height: clamp(220px, 45vw, 420px);
+  background: var(--surface-2); overflow: hidden; border-radius: 26px; border: 1px solid var(--line); box-shadow: var(--shadow);
 }
 .photo-wrap.show { display: block; animation: photoIn 1s var(--ease) both; }
 .photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 1.2s var(--ease); }
-.photo-wrap:hover img { transform: scale(1.05); }
+.photo-wrap:hover img { transform: scale(1.04); }
 @keyframes photoIn { from { opacity: 0; transform: scale(.97); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
-.credit { position: absolute; right: 12px; bottom: 12px; font-size: .72rem; color: #fff; background: rgba(0, 0, 0, .45); backdrop-filter: blur(4px); padding: 3px 10px; border-radius: 999px; }
+.credit { position: absolute; right: 14px; bottom: 14px; font-size: .74rem; color: #fff; background: rgba(0, 0, 0, .55); backdrop-filter: blur(4px); padding: 4px 11px; border-radius: 999px; }
 .credit:empty { display: none; }
 
-/* ---------- quick facts ---------- */
+/* quick facts: one clean strip, no boxes */
 .stats {
-  display: flex; flex-wrap: wrap; margin: 28px 0 8px; padding: 0 18px;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  display: flex; flex-wrap: wrap; margin: 30px 0 8px; padding: 0;
+  border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line);
 }
-.stat { padding: 15px 24px 15px 0; margin-right: 24px; border-right: 1px solid var(--line); transition: transform .25s var(--ease); }
-.stat:hover { transform: translateY(-2px); }
+.stat { padding: 16px 28px 16px 0; margin-right: 28px; border-right: 1px solid var(--line); }
 .stat:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
-.stat-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
-.stat-val { font-family: var(--serif); font-size: 1.6rem; line-height: 1.2; color: var(--green); }
+.stat-label { font-size: .82rem; color: var(--muted); font-weight: 500; }
+.stat-val { font-family: var(--serif); font-size: 1.7rem; font-weight: 600; line-height: 1.2; color: var(--green); }
 
 .safe {
-  margin: 16px 0 0; padding: 14px 16px; font-size: .94rem;
-  background: var(--accent-soft); border: 1px solid rgba(226, 138, 85, .3); border-left: 4px solid var(--accent); border-radius: 12px;
+  margin: 18px 0 0; padding: 15px 18px; font-size: .96rem; color: var(--ink);
+  background: var(--accent-soft); border-left: 5px solid var(--accent); border-radius: 4px 14px 14px 4px;
 }
-.safe small { display: block; color: var(--muted); margin-top: 2px; }
+.safe small { display: block; color: var(--muted); margin-top: 3px; }
 
-/* ---------- ingredients + method ---------- */
-.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: clamp(28px, 5vw, 56px); margin-top: 36px; }
-@media (max-width: 760px) { .cols { grid-template-columns: 1fr; gap: 36px; } }
-h3 { font-family: var(--serif); font-weight: 500; font-size: 1.8rem; letter-spacing: -.01em; margin: 0 0 4px; }
-.hint { margin: 0 0 12px; font-size: .84rem; color: var(--muted); }
+/* ---------- 8. Ingredients and method ---------- */
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: clamp(28px, 5vw, 60px); margin-top: 38px; align-items: start; }
+@media (min-width: 761px) { .cols > :first-child { position: sticky; top: 20px; } } /* ingredients stay in view while you scroll the method */
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr; gap: 38px; } }
+h3 { font-family: var(--serif); font-weight: 600; font-size: 1.75rem; letter-spacing: -.02em; margin: 0 0 4px; color: var(--ink); }
+.hint { margin: 0 0 14px; font-size: .88rem; color: var(--muted); }
 
-ul.ing { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--ink); }
-ul.ing li { border-bottom: 1px solid var(--line); animation: slideIn .6s var(--ease) both; transition: background .2s, padding .25s var(--ease); }
-ul.ing li:hover { background: var(--surface-2); padding-left: 8px; }
+ul.ing {
+  list-style: none; padding: 4px 18px; margin: 0;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+}
+ul.ing li { border-bottom: 1px solid var(--line); animation: slideIn .6s var(--ease) both; }
+ul.ing li:last-child { border-bottom: 0; }
 ul.ing li:nth-child(1) { animation-delay: .30s; } ul.ing li:nth-child(2) { animation-delay: .36s; }
 ul.ing li:nth-child(3) { animation-delay: .42s; } ul.ing li:nth-child(4) { animation-delay: .48s; }
 ul.ing li:nth-child(5) { animation-delay: .54s; } ul.ing li:nth-child(6) { animation-delay: .60s; }
 ul.ing li:nth-child(7) { animation-delay: .66s; } ul.ing li:nth-child(8) { animation-delay: .72s; }
 ul.ing li:nth-child(n+9) { animation-delay: .78s; }
-ul.ing label { display: flex; gap: 12px; align-items: flex-start; padding: 13px 0; cursor: pointer; }
+ul.ing label { display: flex; gap: 13px; align-items: flex-start; padding: 13px 0; cursor: pointer; line-height: 1.45; }
 /* custom checkbox */
 ul.ing input {
-  appearance: none; -webkit-appearance: none; flex: none; margin: 3px 0 0; width: 20px; height: 20px;
-  border: 2px solid var(--muted); border-radius: 6px; background: transparent; cursor: pointer; position: relative;
+  appearance: none; -webkit-appearance: none; flex: none; margin: 2px 0 0; width: 22px; height: 22px;
+  border: 2px solid var(--muted); border-radius: 7px; background: transparent; cursor: pointer; position: relative;
   transition: background .2s, border-color .2s, transform .2s var(--ease);
 }
 ul.ing input:hover { border-color: var(--green); transform: scale(1.1); }
 ul.ing input:checked { background: var(--green); border-color: var(--green); animation: tick .35s var(--ease); }
 ul.ing input:checked::after {
-  content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px;
-  border: solid var(--surface); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+  content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px;
+  border: solid var(--on-green); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
 }
 @keyframes tick { 50% { transform: scale(1.3); } }
 ul.ing li span { transition: color .25s, opacity .25s; }
-ul.ing li.done span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--accent); opacity: .7; }
+ul.ing li.done span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; opacity: .75; }
 
-ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; border-top: 1px solid var(--ink); }
+ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; border-top: 2px solid var(--ink); }
 ol.steps li {
-  counter-increment: s; position: relative; padding: 18px 12px 18px 56px; border-bottom: 1px solid var(--line);
-  cursor: pointer; font-family: var(--serif); font-size: 1.15rem; line-height: 1.6; border-radius: 10px;
+  counter-increment: s; position: relative; padding: 20px 14px 20px 64px; border-bottom: 1px solid var(--line);
+  cursor: pointer; font-family: var(--sans); font-size: 1.08rem; line-height: 1.7; max-width: 68ch;
   animation: slideIn .6s var(--ease) both;
-  transition: opacity .3s, background .2s, transform .25s var(--ease);
+  transition: opacity .3s, background .2s;
 }
 ol.steps li:nth-child(1) { animation-delay: .35s; } ol.steps li:nth-child(2) { animation-delay: .43s; }
 ol.steps li:nth-child(3) { animation-delay: .51s; } ol.steps li:nth-child(4) { animation-delay: .59s; }
 ol.steps li:nth-child(5) { animation-delay: .67s; } ol.steps li:nth-child(n+6) { animation-delay: .75s; }
-ol.steps li:hover { background: var(--surface-2); transform: translateX(4px); }
-ol.steps li:active { transform: scale(.99); }
+ol.steps li:hover { background: var(--surface-2); }
 ol.steps li::before {
-  content: counter(s); position: absolute; left: 8px; top: 12px; width: 34px; height: 34px;
-  display: grid; place-items: center; border-radius: 50%; font-size: 1.15rem; line-height: 1;
-  color: var(--accent); border: 1.5px solid var(--accent);
+  content: counter(s); position: absolute; left: 10px; top: 18px; width: 36px; height: 36px;
+  display: grid; place-items: center; border-radius: 50%;
+  font-family: var(--serif); font-weight: 600; font-size: 1.15rem; line-height: 1;
+  color: var(--green); border: 2px solid var(--green);
   transition: background .25s, color .25s, transform .3s var(--ease);
 }
-ol.steps li.done { opacity: .45; }
-ol.steps li.done::before { content: "✓"; background: var(--green); border-color: var(--green); color: var(--surface); transform: rotate(360deg); }
+ol.steps li.done { opacity: .5; }
+ol.steps li.done::before { content: "✓"; background: var(--green); border-color: var(--green); color: var(--on-green); transform: rotate(360deg); }
 
 /* voice cooking */
-.voice-cook { margin: 12px 0 18px; padding: 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; }
-.voice-cook p { margin: 2px 0 12px; color: var(--muted); font-size: .9rem; }
+.voice-cook { margin: 12px 0 20px; padding: 18px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 18px; }
+.voice-cook strong { color: var(--ink); }
+.voice-cook p { margin: 2px 0 14px; color: var(--muted); font-size: .92rem; }
 .voice-controls { display: flex; flex-wrap: wrap; gap: 8px; }
 .voice-controls button {
-  border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 9px 15px; cursor: pointer;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px;
+  padding: 10px 16px; font-weight: 500; cursor: pointer;
   transition: transform .2s var(--ease), background .2s, border-color .2s;
 }
 .voice-controls button:hover { transform: translateY(-2px); border-color: var(--green); }
 .voice-controls button:active { transform: scale(.94); }
-.voice-controls button.primary { background: var(--green); color: #fff; border-color: var(--green); }
-@media (prefers-color-scheme: dark) { .voice-controls button.primary { color: #0f1813; } }
-.voice-status { display: block; margin-top: 10px; font-size: .85rem; color: var(--green); }
+.voice-controls button.primary { background: var(--green); color: var(--on-green); border-color: var(--green); font-weight: 600; }
+.voice-status { display: block; margin-top: 12px; font-size: .88rem; color: var(--green); font-weight: 500; }
 
-.extra { margin-top: 36px; padding: 18px 22px; background: var(--warm); border: 1px solid rgba(226, 138, 85, .25); border-radius: 16px; }
-.extra ul { margin: 8px 0 0; padding-left: 18px; }
-.extra li { margin-bottom: 4px; }
+.extra { margin-top: 40px; padding: 20px 24px; background: var(--warm); color: var(--ink); border-left: 5px solid var(--accent); border-radius: 4px 18px 18px 4px; }
+.extra ul { margin: 8px 0 0; padding-left: 20px; }
+.extra li { margin-bottom: 6px; }
 
-.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--line); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); }
 .act {
-  background: var(--surface); border: 1px solid var(--line); padding: 10px 18px; border-radius: 999px;
-  font-weight: 500; font-size: .9rem; cursor: pointer;
-  transition: transform .2s var(--ease), background .2s, border-color .2s, box-shadow .2s;
+  background: transparent; color: var(--ink); border: 1.5px solid var(--line); padding: 11px 20px; border-radius: 999px;
+  font-weight: 600; font-size: .92rem; cursor: pointer;
+  transition: transform .2s var(--ease), background .2s, border-color .2s;
 }
-.act:hover { transform: translateY(-2px); border-color: var(--green); box-shadow: var(--shadow-sm); }
+.act:hover { transform: translateY(-2px); border-color: var(--green); background: var(--surface-2); }
 .act:active { transform: scale(.95); }
 
-footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+footer { margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
 
-/* ---------- shared keyframes ---------- */
+/* ---------- 9. Shared keyframes ---------- */
 @keyframes fadeUp   { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes fadeDown { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
 @keyframes slideIn  { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
 
-/* ---------- mobile ---------- */
-@media (max-width: 640px) {
-  .page { padding: 0 16px 38px; }
-  .top { padding: 18px 0; }
-  .order { margin-top: 18px; padding: 26px 20px; border-radius: 18px; }
-  .sentence { font-size: clamp(2rem, 9vw, 3rem); }
-  .blank, .sentence.small .blank { min-width: 100%; }
-  .stats { padding: 0 12px; }
-  .stat { margin-right: 12px; padding-right: 12px; }
+/* ---------- 10. Photo-scan area: readability safety net ----------
+   photo-scan.css is a separate file with its own colours. In dark mode some of its
+   boxes stayed light while the text turned light too, so the text vanished. These rules
+   (loaded after it, and marked !important) force dark boxes with light text in dark mode. */
+@media (prefers-color-scheme: dark) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(.blank),
+  select, textarea {
+    background-color: var(--field) !important; color: var(--ink) !important; border-color: var(--line) !important;
+  }
+  select option { background: var(--surface); color: var(--ink); }
+
+  /* the dashed upload box */
+  [class*="drop"], [class*="zone"], [class*="upload"] {
+    background: var(--surface-2) !important; border-color: var(--green) !important; color: var(--ink) !important;
+  }
+  /* outline buttons such as "Change photo" (main green buttons are left alone) */
+  :is([class*="scan"], [id*="scan"], [class*="drop"], [class*="upload"]) button:not([class*="primary"]):not([class*="find"]):not([class*="submit"]):not([class*="cta"]):not([class*="solid"]) {
+    background-color: transparent !important; color: var(--ink) !important; border-color: var(--line) !important;
+  }
+  /* the little ingredient tags such as "Eggs x" */
+  :is([class*="scan"], [id*="scan"], [class*="ingredient"]) :is([class*="chip"], [class*="tag"], [class*="pill"]):not(.chip):not(.recent-chip):not(.chip-label):not(.chips) {
+    background-color: var(--surface-2) !important; color: var(--ink) !important; border-color: var(--line) !important;
+  }
+  :is([class*="chip"], [class*="tag"], [class*="pill"]):not(.chip):not(.recent-chip):not(.chip-label):not(.chips) button {
+    color: var(--ink) !important; background: transparent !important;
+  }
 }
 
-/* ---------- print ---------- */
+/* ---------- 11. Mobile ---------- */
+@media (max-width: 640px) {
+  .page { padding: 0 16px 40px; }
+  .top { padding: 18px 0 14px; }
+  .order { padding: 24px 20px; border-radius: 22px; }
+  .sentence { font-size: clamp(1.8rem, 8vw, 2.6rem); }
+  .blank { flex-basis: 100%; }
+  .sentence.small .blank { flex-basis: 100%; }
+  .stat { margin-right: 14px; padding-right: 14px; }
+  ol.steps li { padding-left: 58px; }
+}
+
+/* ---------- 12. Print ---------- */
 @media print {
-  .top, .order, .actions, footer, .hint, .credit, .voice-cook, body::before, body::after { display: none !important; }
-  body { background: #fff; color: #000; }
+  .top, .order, .actions, footer, .hint, .credit, .voice-cook { display: none !important; }
+  body { background: #fff !important; color: #000; }
   #out { margin-top: 0; }
+  .cols > :first-child { position: static; }
   .recipe > *, ul.ing li, ol.steps li { animation: none !important; }
 }
 
-/* ---------- accessibility ---------- */
+/* ---------- 13. Accessibility: respect "reduce motion" ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
