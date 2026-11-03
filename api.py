@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from chefgpt.pipeline import run
 
 app = FastAPI(title="ChefGPT")
+app.include_router(photo_router)
 
 
 class RecipeRequest(BaseModel):
