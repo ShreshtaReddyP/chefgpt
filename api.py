@@ -329,6 +329,19 @@ PAGE = r"""
   }
 
 
+/* ChefGPT cooking animation refinement */
+.loading-scene .pot { transform-origin: 50% 100%; animation: potSimmer 1.6s ease-in-out infinite; }
+.loading-scene .pot::after { animation: brothBubble 1.1s ease-in-out infinite; }
+.ingredient.i5 { left: 72%; top: 65px; font-size: 1.3rem; animation-delay: -.2s; }
+#loadmsg { opacity: 1; transform: translateY(0); transition: opacity .22s ease, transform .22s ease; }
+#loadmsg.changing { opacity: 0; transform: translateY(7px); }
+@keyframes potSimmer { 0%,100% { translate: 0 0; rotate: 0deg; } 50% { translate: 0 -3px; rotate: -.8deg; } }
+@keyframes brothBubble { 0%,100% { transform: translateX(-50%) scale(.82); opacity: .55; } 50% { transform: translateX(-50%) scale(1.18); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .loading-scene .pot, .loading-scene .pot::after { animation: none !important; }
+  #loadmsg { transition: none !important; }
+}
+
 /* UI-only refinement: original HTML, JavaScript, and API logic remain unchanged. */
 :root {
   --bone: #f5f3ed;
@@ -405,6 +418,77 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
   .blank, .sentence.small .blank { min-width: 100%; }
   .go { width: 100%; }
   .stat { margin-right: 14px; padding-right: 14px; }
+}
+
+
+/* ---------- ChefGPT compact, structured UI ---------- */
+.page { max-width: 1080px; padding: 0 26px 52px; }
+.top { padding: 18px 0 14px; }
+.logo { font-size: 1.55rem; }
+.top p { font-size: .82rem; }
+.order {
+  margin: 22px 0 0;
+  padding: clamp(22px, 3.4vw, 34px);
+  border-radius: 16px;
+}
+.sentence {
+  font-size: clamp(1.65rem, 3.1vw, 2.45rem);
+  line-height: 1.14;
+  letter-spacing: -.035em;
+  gap: 5px 9px;
+  margin-bottom: 14px;
+}
+.sentence.small {
+  font-size: clamp(.98rem, 1.5vw, 1.12rem);
+  line-height: 1.45;
+}
+.blank {
+  min-width: 8ch;
+  padding: 0 3px 4px;
+}
+.row { margin-top: 18px; }
+.go { padding: 10px 19px; font-size: .92rem; border-radius: 7px; }
+.chips { gap: 7px; margin-top: 14px; font-size: .84rem; }
+.chip { padding: 5px 9px; border-radius: 6px; }
+#out { margin-top: 26px; }
+.loading {
+  padding: 22px 20px 26px;
+  border-radius: 16px;
+}
+.loading-scene { height: 160px; margin-bottom: 10px; }
+#loadmsg { font-size: clamp(1.1rem, 2.2vw, 1.45rem); }
+.loading small { font-size: .82rem; }
+.title { font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.12; }
+.desc { font-size: 1.02rem; line-height: 1.55; }
+.stats { gap: 12px; }
+.stat { padding-top: 12px; padding-bottom: 12px; }
+.stat-val { font-size: 1.35rem; }
+h3 { font-size: 1.45rem; line-height: 1.25; }
+.hint { font-size: .78rem; margin-bottom: 8px; }
+ul.ing li { padding: 9px 0; }
+ol.steps li { padding: 10px 0 10px 38px; font-size: 1rem; line-height: 1.5; }
+ol.steps li::before { top: 7px; font-size: 1.45rem; }
+.safe { margin-top: 12px; padding: 11px 13px; font-size: .86rem; }
+.act { padding: 8px 13px; font-size: .84rem; }
+footer { margin-top: 30px; font-size: .76rem; }
+@media (max-width: 760px) {
+  .page { padding: 0 18px 40px; }
+  .order { padding: 24px 20px; }
+}
+@media (max-width: 640px) {
+  .page { padding: 0 13px 32px; }
+  .top { padding: 14px 0 12px; }
+  .logo { font-size: 1.4rem; }
+  .order { margin-top: 14px; padding: 20px 16px; border-radius: 13px; }
+  .sentence { font-size: clamp(1.55rem, 7.4vw, 2.15rem); }
+  .blank, .sentence.small .blank { min-width: 0; width: 100%; flex: 1 0 100%; }
+  .row { margin-top: 14px; }
+  .go { width: 100%; }
+  .loading { padding: 18px 12px 22px; }
+  .loading-scene { height: 140px; }
+  .title { font-size: clamp(1.7rem, 8vw, 2.3rem); }
+  .desc { font-size: .94rem; }
+  h3 { font-size: 1.3rem; }
 }
 
 </style>
@@ -583,6 +667,7 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
           <div class="ingredient i2">🌿</div>
           <div class="ingredient i3">🧄</div>
           <div class="ingredient i4">🍄</div>
+          <div class="ingredient i5">🍝</div>
           <div class="pot"></div>
         </div>
         <div class="loading-copy">
@@ -605,7 +690,15 @@ footer { border-top: 1px solid var(--line); padding-top: 18px; }
 
   function updateLoadingMessage(index) {
     const message = $("loadmsg");
-    if (message) message.textContent = LOADING_MSGS[index];
+    if (message) {
+      message.classList.add("changing");
+      window.setTimeout(() => {
+        // The loader may have been replaced by the recipe/error while fading.
+        if (!message.isConnected) return;
+        message.textContent = LOADING_MSGS[index];
+        message.classList.remove("changing");
+      }, 220);
+    }
 
     const dots = out.querySelectorAll(".loading-progress span");
     dots.forEach((dot, i) => dot.classList.toggle("active", i === index));
