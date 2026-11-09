@@ -287,11 +287,7 @@ It also provides practical experience in API integration, structured response pr
 
 ---
 
-## 👩‍💻 Author
 
-Developed as an AI/ML project focused on Generative AI, prompt engineering, and dietary constraint evaluation.
-
----
 
 <p align="center">
 
