@@ -1,199 +1,300 @@
-# 🍳 ChefGPT — Constraint-Aware Multimodal Recipe Intelligence Engine
+# 🍳 ChefGPT – AI-Powered Recipe Assistant
 
-[![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-Multimodal%20Vision-4285F4.svg?logo=google&logoColor=white)](https://aistudio.google.com/)
-[![Pydantic v2](https://img.shields.io/badge/Pydantic-v2.6-E92063.svg?logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
-[![Pytest](https://img.shields.io/badge/Tests-Passing-brightgreen.svg?logo=pytest&logoColor=white)](https://pytest.org/)
-[![Render](https://img.shields.io/badge/Deploy-Render-46E3B7.svg?logo=render&logoColor=white)](https://render.com)
+**Your cravings, your preferences, your recipe.**
 
-> An enterprise-grade, constraint-grounded generative AI engine that turns raw food ingredients and leftover photos into dietary-compliant recipes using **Dual-Layer Neuro-Symbolic Auditing** and **Self-Correcting Reflection Loops**.
+ChefGPT is a Generative AI-powered recipe assistant that transforms food cravings into personalized recipes while considering user-defined dietary restrictions.
 
----
+Built using Python, Google Gemini, and prompt engineering, ChefGPT follows a two-stage AI approach: one component generates recipes, while a separate AI auditor evaluates them against the user's dietary constraints.
 
-## 🎥 Live Demo
-
-https://github.com/user-attachments/assets/b81f1711-ea06-44b0-8594-fc60ee65fd14
+The goal is not just to generate recipes but to make AI-generated cooking suggestions more constraint-aware.
 
 ---
 
-## 💡 The Core Problem: LLM Constraint Blindspots
+## ✨ Features
 
-In Generative AI, Large Language Models are probabilistic next-token predictors. When tasked with generating recipes under strict dietary or allergen constraints (e.g. *"Strictly Vegan, No Tree Nuts, Under 500 Calories"*), standard LLMs exhibit severe **constraint drift**:
-- Accidental inclusion of hidden dairy derivatives (*"butter"*, *"ghee"*, *"parmesan"*).
-- Confusion between non-dairy alternatives (*"almond milk"* vs *"cow's milk"* vs *"coconut cream"*).
-- Silent allergen contamination (peanuts, sesame, gluten cross-ingredients like soy sauce).
-
-**ChefGPT solves this through a Neuro-Symbolic Architecture:** combining probabilistic generative intelligence with a deterministic, rule-based symbolic safety barrier and an autonomous **Reflexion repair cycle**.
+- **AI-Powered Recipe Generation:** Generate personalized recipes based on dish names and food preferences.
+- **Dietary Constraint Evaluation:** Evaluates generated recipes against user-specified dietary restrictions.
+- **Independent AI Auditing:** Uses a separate auditing prompt to identify potentially restricted ingredients.
+- **Structured JSON Responses:** Processes AI-generated content into structured recipe data.
+- **Ingredient Checklist:** Interactive checklist to track ingredients while cooking.
+- **Food Image Integration:** Retrieves relevant food images using the Pixabay API.
+- **Interactive User Interface:** Provides an engaging experience for discovering and preparing recipes.
 
 ---
 
 ## 🏛️ System Architecture
 
+ChefGPT follows a modular architecture consisting of recipe generation, response parsing, and dietary constraint evaluation.
+
+### Architecture Diagram
+
 ```mermaid
 flowchart TD
-    Input([User Dish Idea OR Leftover Photo]) --> Multimodal[Multimodal Vision Extraction<br/>Gemini Vision API]
-    Multimodal --> Parser[Structured Constraint Parser<br/>Pydantic Schema Validation]
-    Parser --> Generator[Initial Recipe Synthesis<br/>Gemini 2.0 / Flash]
-    
-    Generator --> DualAudit{Dual-Layer Neuro-Symbolic Audit}
-    DualAudit -->|Layer 1| LLMAudit[Probabilistic LLM Auditor<br/>Contextual Checks]
-    DualAudit -->|Layer 2| RuleAudit[Deterministic Symbolic Layer<br/>Allergen Lexicons & Safe-Phrase Regex]
-    
-    DualAudit --> Check{Constraint Violations Detected?}
-    Check -->|Violations Found| Refine[Self-Correcting Repair Loop<br/>Up to 3 Automated Reflection Cycles]
-    Refine --> Generator
-    
-    Check -->|Zero Violations| CleanRecipe[Validated Recipe & Interactive Cooking UI]
-    CleanRecipe --> PhotoEngine[Cached Stock Photo Lookup<br/>Pixabay API with Synonym Normalization]
+    A["User"] --> B["ChefGPT Frontend"]
+    B --> C["FastAPI Backend"]
+    C --> D["User Input Processing"]
+
+    D --> E["Recipe Generator"]
+    E --> F["Google Gemini API"]
+    F --> G["Generated Recipe"]
+
+    G --> H["JSON Parsing"]
+    H --> I["Dietary Auditor"]
+    I --> J["Google Gemini API"]
+
+    J --> K["Dietary Constraint Evaluation"]
+
+    K --> L{"Evaluation Result"}
+
+    L -->|Compliant| M["Validated Recipe"]
+    L -->|Violations Found| N["Dietary Violation Report"]
+
+    M --> O["Frontend Response"]
+    N --> O
+
+    O --> P["Recipe Display"]
+    O --> Q["Ingredient Checklist"]
+    O --> R["Pixabay Food Images"]
 ```
 
----
+### Architecture Components
 
-## 🌟 Key Technical Innovations
-
-### 1. Dual-Layer Neuro-Symbolic Auditing
-Instead of blindly trusting the LLM to police itself, ChefGPT enforces a **two-tier defense**:
-* **Layer 1 (LLM Semantic Auditor):** Evaluates abstract, nuanced constraints (e.g. calorie thresholds, cooking skill level).
-* **Layer 2 (Deterministic Symbolic Safety Barrier):** Hard-coded regex and strict lexicon checks across **9 major allergen classes** (Peanuts, Tree Nuts, Dairy, Gluten, Eggs, Shellfish, Fish, Soy, Sesame) and lifestyle diets (Vegan, Vegetarian, Pescatarian).
-* **Contextual Safe-Phrase Handling:** Intelligently recognizes non-violating plant-based phrases (e.g. *"coconut milk"*, *"almond milk"*, *"vegan cheese"*, *"butternut squash"*) while strictly flagging real dairy or animal products.
-
-### 2. Autonomous Critique-and-Refine Repair Loop (`pipeline.py`)
-If the audit catches any violation, the system does not fail or display an unsafe recipe:
-* It formats the exact violations (e.g. `"- parmesan: vegan (dairy derivative)"`).
-* It initiates an automated reflection cycle feeding the violation feedback back to the LLM via `REPAIR_TEMPLATE`.
-* It re-evaluates the recipe up to **3 consecutive iterations** until 100% compliance is mathematically achieved.
-
-### 3. Multimodal Ingredient Scanner (`photo_scan.py`)
-* Accepts base64 encoded photo uploads of raw fridge leftovers.
-* Uses Gemini Multimodal Vision to extract identifiable ingredients, culinary styles, and suggests multiple tailored meal options based on detected items.
-
-### 4. Smart Image Resolution & Cache
-* Queries Pixabay API with ingredient synonym normalization (e.g., mapping *"aubergine"* $\leftrightarrow$ *"eggplant"*, *"prawn"* $\leftrightarrow$ *"shrimp"*).
-* Implements server-side TTL in-memory caching to eliminate redundant external network calls.
-
----
-
-## 🛠️ Tech Stack
-
-| Domain | Technology |
+| Component | Responsibility |
 |---|---|
-| **Backend Framework** | Python 3.11, FastAPI (Async REST APIs) |
-| **Data Validation** | Pydantic v2 (Strict typing, serialization) |
-| **Generative & Vision AI** | Google Gemini Multimodal API (`gemini-2.0-flash`) |
-| **Safety & Verification** | Custom Neuro-Symbolic Rule Engine (`rules.py`) |
-| **Testing & Quality** | Pytest (Automated allergen regression tests) |
-| **Frontend** | Responsive Vanilla JavaScript, HTML5, Modern CSS |
-| **Cloud Deployment** | Render.com Web Service / Docker |
+| Frontend | Collects user input and displays generated recipes. |
+| FastAPI Backend | Handles requests and coordinates the application workflow. |
+| Recipe Generator | Generates recipes using Gemini and a generation prompt. |
+| Google Gemini API | Provides generative AI capabilities. |
+| JSON Parser | Extracts and structures the generated recipe information. |
+| Dietary Auditor | Independently evaluates recipe ingredients against dietary restrictions. |
+| Constraint Evaluator | Processes the auditor's evaluation and identifies potential violations. |
+| Pixabay API | Retrieves relevant food images. |
+
+### Data Flow
+
+1. **User Input:** The user enters a dish idea and dietary restrictions.
+2. **Request Processing:** The frontend sends the information to the FastAPI backend.
+3. **Recipe Generation:** The Recipe Generator sends a carefully engineered prompt to Google Gemini.
+4. **Response Parsing:** The generated recipe is parsed into structured JSON.
+5. **Dietary Auditing:** A separate AI auditor receives the recipe and dietary constraints.
+6. **Constraint Evaluation:** The auditor checks ingredients for potential violations.
+7. **Result Presentation:** The evaluation and recipe information are returned to the frontend.
+8. **User Interaction:** The user can explore the recipe and use the ingredient checklist.
 
 ---
 
-## 📋 Copy-Paste Resume Bullet Points
+## 🧠 AI Implementation
 
-Include this on your resume under **Projects**:
+ChefGPT uses two distinct prompt-engineered AI components.
 
-> **Constraint-Aware Multimodal Recipe Intelligence Engine** | *Python, FastAPI, Gemini Vision API, Pydantic, Pytest, Docker*
-> - Engineered a multimodal vision-to-text system parsing raw leftover photos and unstructured dietary requirements into validated meal plans.
-> - Solved LLM constraint drift and allergen hallucination by designing a **dual-layer neuro-symbolic audit pipeline** combining probabilistic LLM checks with deterministic regex rules across 9 allergen categories.
-> - Implemented an autonomous **Self-Correcting Repair Loop** that programmatically reflects on constraint violations and regenerates recipes across 3 self-repair iterations, achieving 100% verified compliance.
-> - Built comprehensive automated test coverage with Pytest, validating complex semantic edge cases (e.g., contextual exceptions like "coconut milk" vs dairy "milk").
+### 1. Recipe Generator
+
+The Recipe Generator is responsible for creating recipes based on user input.
+
+It considers:
+- Requested dish or food idea.
+- Dietary restrictions.
+- Ingredient requirements.
+- Recipe preparation instructions.
+
+The generator uses a structured prompt to guide Gemini toward producing organized recipe information.
+
+### 2. Dietary Auditor
+
+The Dietary Auditor acts as an independent evaluation component.
+
+Instead of assuming that the generated recipe follows all dietary requirements, it examines the generated ingredients against the user's restrictions.
+
+It is designed to:
+- Identify potentially restricted ingredients.
+- Check whether ingredients conflict with dietary constraints.
+- Report potential violations.
+- Return structured evaluation results.
+
+### Why Two AI Components?
+
+A recipe generator may unintentionally include ingredients that conflict with user preferences or dietary restrictions.
+
+By introducing a separate auditing stage, ChefGPT adds an additional evaluation layer rather than relying entirely on the recipe generator's output.
+
+This demonstrates how multiple prompt-engineered LLM components can work together in a single application.
+
+*Note: AI-based auditing is not a guarantee of allergen safety or medical suitability. Generated results should be independently verified.*
 
 ---
 
-## 🚀 Local Quickstart
+## 🛠️ Technology Stack
 
-### 1. Clone & Navigate
-```bash
-git clone https://github.com/ShreshtaReddyP/chefgpt.git
-cd chefgpt
+| Technology | Purpose |
+|---|---|
+| Python | Core application logic |
+| FastAPI | Backend development and API handling |
+| Google Gemini | Recipe generation and dietary evaluation |
+| Prompt Engineering | Controls AI generation and auditing behavior |
+| JSON | Structured AI response processing |
+| Pydantic | Data validation, where implemented |
+| HTML5 | Frontend structure |
+| CSS3 | Styling and responsive design |
+| JavaScript | Frontend interactions |
+| Pixabay API | Food image retrieval |
+
+---
+
+## 📂 Project Structure
+
+```text
+ChefGPT/
+│
+├── api.py
+├── requirements.txt
+├── .env
+├── .gitignore
+│
+├── chefgpt/
+│   └── pipeline.py
+│
+├── demovideo_chefgpt.mp4
+│
+└── README.md
 ```
 
-### 2. Set Up Virtual Environment
+*The structure above is illustrative. Adjust the filenames and folders to match your actual repository.*
+
+---
+
+## ⚙️ Installation and Setup
+
+### Prerequisites
+
+- Python 3.10 or later
+- pip
+- Google Gemini API key
+- Pixabay API key
+
+### 1. Clone the Repository
+
+```bash
+git clone YOUR_REPOSITORY_URL
+cd ChefGPT
+```
+
+### 2. Create a Virtual Environment
+
 ```bash
 python -m venv venv
+```
 
-# On Windows:
-.\venv\Scripts\activate
+Activate the environment.
 
-# On macOS/Linux:
+**Windows:**
+
+```bash
+venv\Scripts\activate
+```
+
+**macOS / Linux:**
+
+```bash
 source venv/bin/activate
 ```
 
 ### 3. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 4. Configure Environment Variables
-Create a `.env` file in the root directory:
+
+Create a `.env` file in the root directory.
+
 ```env
-GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-2.0-flash
-PIXABAY_API_KEY=your_optional_pixabay_key
+GEMINI_API_KEY=your_gemini_api_key
+PIXABAY_API_KEY=your_pixabay_api_key
 ```
 
-### 5. Run the Server
+Get your API credentials:
+
+- [Google AI Studio – Gemini API](https://aistudio.google.com/)
+- [Pixabay API Documentation](https://pixabay.com/api/docs/)
+
+**Security:** Never upload your `.env` file or expose your API keys publicly.
+
+### 5. Run the Application
+
+Start the FastAPI server:
+
 ```bash
-uvicorn api:app --reload --host 0.0.0.0 --port 8000
-```
-Open **`http://localhost:8000`** in your browser!
-
-### 6. Run Unit Tests
-```bash
-pytest tests/ -v
+uvicorn api:app --reload
 ```
 
----
+Open the application in your browser:
 
-## 📡 API Reference
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/` | Serves the interactive cooking & scan web dashboard |
-| `POST` | `/recipe` | Generates and audits a recipe against dietary constraints |
-| `POST` | `/scan` | Multimodal photo scan: parses ingredient images into recipe ideas |
-| `GET` | `/photo` | Fetches verified food imagery with caching |
-
-#### Example `/recipe` Request:
-```json
-{
-  "request": "creamy pasta with mushrooms",
-  "constraints": "strictly vegan, nut-free"
-}
+```text
+http://127.0.0.1:8000
 ```
 
-#### Example Response:
-```json
-{
-  "recipe": {
-    "title": "Creamy Vegan Garlic & Cashew-Free Mushroom Pasta",
-    "ingredients": [
-      { "name": "fettuccine", "amount": "250g" },
-      { "name": "cremini mushrooms", "amount": "200g" },
-      { "name": "oat milk (unsweetened)", "amount": "1 cup" },
-      { "name": "nutritional yeast", "amount": "2 tbsp" }
-    ],
-    "instructions": ["..."],
-    "calories_per_serving": 420
-  },
-  "passed": true,
-  "attempts": 1,
-  "violations": []
-}
+API documentation:
+
+```text
+http://127.0.0.1:8000/docs
 ```
 
 ---
 
-## ☁️ Deployment (Render.com)
+## 🔌 Backend API
 
-ChefGPT is pre-configured for 1-click deployment on Render:
-1. Connect this GitHub repository on [Render](https://dashboard.render.com).
-2. Set **Build Command:** `pip install -r requirements.txt`
-3. Set **Start Command:** `uvicorn api:app --host 0.0.0.0 --port $PORT`
-4. Add environment variable: `GEMINI_API_KEY`
-5. Click **Create Web Service**!
+ChefGPT uses FastAPI to handle communication between the frontend and backend.
+
+The application exposes its implemented endpoints for recipe generation and related functionality.
+
+FastAPI also provides interactive API documentation through Swagger UI.
+
+Access it at:
+
+`http://127.0.0.1:8000/docs`
 
 ---
 
-## 🛡️ License
-MIT License. Open-source and free for commercial or educational adaptation.
+## 🎥 Project Demo
+
+See how ChefGPT works:
+
+[▶ Watch ChefGPT Demo](./demovideo_chefgpt.mp4)
+
+---
+
+## 🚀 Future Enhancements
+
+Potential improvements include:
+
+- More advanced ingredient substitution.
+- Recipe recommendations based on available ingredients.
+- Improved dietary and allergen validation.
+- Recipe history and saved favourites.
+- Personalized recommendations based on user preferences.
+- Multilingual recipe generation.
+
+---
+
+## 🎯 Project Objective
+
+ChefGPT was developed to explore the practical application of Generative AI, prompt engineering, and multi-component LLM workflows.
+
+The project demonstrates how a generation component and an independent auditing component can be combined to build an AI application that goes beyond simple text generation.
+
+It also provides practical experience in API integration, structured response processing, backend development, and frontend interaction.
+
+---
+
+## 👩‍💻 Author
+
+Developed as an AI/ML project focused on Generative AI, prompt engineering, and dietary constraint evaluation.
+
+---
+
+<p align="center">
+
+**ChefGPT – Turning food cravings into personalized cooking experiences.**
+
+</p>
